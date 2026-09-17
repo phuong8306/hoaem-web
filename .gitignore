@@ -1,0 +1,29 @@
+# Config chứa mật khẩu
+/config/config.php
+
+# Uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
+!/public/uploads/products/.gitkeep
+
+# Vendor
+/vendor/
+
+# Env
+.env
+.env.local
+
+# Log
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
