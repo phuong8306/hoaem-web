@@ -1,4 +1,12 @@
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+
+# 1. Bỏ qua assets, uploads, favicon — phục vụ file thẳng
+RewriteRule ^(assets|uploads|favicon\.ico) - [L]
+
+# 2. Bỏ qua file/thư mục thật
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 3. Còn lại đẩy về index.php
 RewriteRule ^ index.php [QSA,L]
