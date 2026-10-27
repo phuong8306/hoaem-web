@@ -1,18 +1,14 @@
 FROM php:8.2-apache
 
-RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Kích hoạt URL Rewrite
+RUN a2enmod rewrite
 
-# Bật modules cần thiết
-RUN a2enmod rewrite headers alias
+# Cài đặt các extension kết nối Database (PDO, MySQLi)
+RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# Cho phép .htaccess ở mọi thư mục
-RUN sed -ri 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
-
-# Copy vhost
-COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+# Chuyển DocumentRoot mặc định sang thư mục public
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 WORKDIR /var/www/html
-EXPOSE 80

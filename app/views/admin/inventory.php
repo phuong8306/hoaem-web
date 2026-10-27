@@ -1,73 +1,170 @@
+<?php
+$variants = isset($variants) ? $variants : [];
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title><?= htmlspecialchars($title) ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= htmlspecialchars($title ?? 'Quản trị - Quản lý Tồn kho') ?></title>
+    
+    <!-- Google Fonts: Be Vietnam Pro & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Cấu hình màu sắc thương hiệu HoaEm -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        earthOrange: '#C96F4E',
+                        earthHover: '#b55f3e',
+                        warmBrown: '#8B5E3C',
+                        customBeige: '#F3E7D9',
+                        warmGray: '#686B6B',
+                        textMain: '#382A32',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 14px; }
-        th { background-color: #2c3e50; color: white; }
-        .badge-low { background: #e74c3c; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-        .badge-ok { background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; }
-        .input-stock { width: 80px; padding: 6px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
-        .btn-save { background: #3498db; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-        .nav-admin { margin-bottom: 20px; }
-        .menu-links a { margin-right: 15px; text-decoration: none; font-weight: bold; color: #3498db; }
-        .menu-links a.active { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 3px; }
+        body { 
+            color: #382A32; 
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #FDF7F2; 
+        }
     </style>
 </head>
-<body style="padding: 20px; font-family: sans-serif;">
-    <a href="/" style="text-decoration: none; color: #3498db;">&larr; Về trang chủ cửa hàng</a>
-    <h2 style="color: #2c3e50;">Quản Lý Tồn Kho (Inventory Management)</h2>
+<body class="min-h-screen flex flex-col antialiased selection:bg-earthOrange selection:text-white">
 
-    <div class="nav-admin menu-links">
-        <a href="/admin/orders">Quản lý Đơn hàng</a>
-        <a href="/admin/products">Quản lý Sản phẩm</a>
-        <a href="/admin/inventory" class="active">Quản lý Tồn kho</a>
+    <!-- Top Navigation Bar -->
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-customBeige py-4 px-6 md:px-10 flex justify-between items-center sticky top-0 z-30 shadow-sm">
+        <!-- Bấm vào logo để quay về trang chủ / xem sản phẩm của cửa hàng -->
+        <a href="/" class="flex items-center gap-3 group cursor-pointer text-decoration-none">
+            <span class="text-3xl transition group-hover:scale-110">🌸</span>
+            <div>
+                <span class="font-serif text-2xl font-bold text-warmBrown tracking-tight group-hover:text-earthOrange transition">hoa&amp;em</span>
+                <span class="block text-[10px] font-bold text-earthOrange uppercase tracking-widest">Admin Dashboard</span>
+            </div>
+        </a>
+        
+        <div class="flex items-center gap-4">
+            <span class="text-xs font-semibold text-warmGray hidden md:inline">Xin chào, <b class="text-textMain"><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></b></span>
+            <a href="/auth/logout" class="px-4 py-2 bg-customBeige/40 hover:bg-red-50 hover:text-red-600 text-warmBrown rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-customBeige">
+                <span>Đăng xuất</span> ➜
+            </a>
+        </div>
+    </header>
+
+    <!-- Sub Navbar (Tabs Quản lý mượt mà, đồng bộ) -->
+    <div class="bg-white/80 backdrop-blur-sm border-b border-customBeige px-6 md:px-10 py-3.5 shadow-xs">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center gap-2.5 text-xs sm:text-sm font-medium">
+            <a href="/admin/orders" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Đơn hàng</a>
+            <a href="/admin/products" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Sản phẩm</a>
+            <a href="/admin/inventory" class="px-4 py-2 rounded-xl bg-earthOrange text-white shadow-sm shadow-earthOrange/25 transition duration-200 font-semibold">Quản lý Tồn kho</a>
+            <a href="/admin/analytics" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Báo cáo &amp; Phân tích</a>
+            <a href="/admin/customers" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Khách hàng</a>
+            <a href="/admin/reviews" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Đánh giá</a>
+            <a href="/admin/vouchers" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Voucher</a>
+        </div>
     </div>
 
-    <?php if (!empty($variants)): ?>
-        <table>
-            <thead>
-                <tr>
-                    <th>Mã SKU</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Phân loại (Size / Màu)</th>
-                    <th>Giá bán</th>
-                    <th>Tồn kho hiện tại</th>
-                    <th>Trạng thái</th>
-                    <th>Cập nhật kho</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($variants as $v): ?>
-                <tr>
-                    <td><strong><?= htmlspecialchars($v['sku']) ?></strong></td>
-                    <td style="text-align: left;"><?= htmlspecialchars($v['product_name']) ?></td>
-                    <td><?= htmlspecialchars($v['color']) ?> - Size <?= htmlspecialchars($v['size']) ?></td>
-                    <td><?= number_format($v['price'], 0, ',', '.') ?> đ</td>
-                    <td>
-                        <form method="POST" action="/admin/updateStock" style="display: flex; gap: 5px; justify-content: center; align-items: center;">
-                            <input type="hidden" name="variant_id" value="<?= $v['id'] ?>">
-                            <input type="number" name="stock_quantity" value="<?= $v['stock_quantity'] ?>" min="0" class="input-stock" required>
-                    </td>
-                    <td>
-                        <?php if ($v['stock_quantity'] <= 5): ?>
-                            <span class="badge-low">Sắp hết hàng!</span>
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="font-serif text-3xl font-bold text-warmBrown">Quản lý Tồn kho</h1>
+            <p class="text-xs text-warmGray mt-1">Theo dõi số lượng tồn kho, cập nhật biến thể sản phẩm và kiểm soát hàng hóa trong kho.</p>
+        </div>
+
+        <!-- Inventory Table Card -->
+        <div class="bg-white rounded-[2rem] shadow-sm border border-customBeige overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-customBeige/30 border-b border-customBeige text-warmBrown text-xs uppercase tracking-wider font-bold">
+                            <th class="py-4 px-6 w-32">Mã SKU</th>
+                            <th class="py-4 px-6">Tên sản phẩm</th>
+                            <th class="py-4 px-6">Phân loại (Size / Màu)</th>
+                            <th class="py-4 px-6">Giá bán</th>
+                            <th class="py-4 px-6 text-center">Tồn kho hiện tại</th>
+                            <th class="py-4 px-6 text-center">Trạng thái</th>
+                            <th class="py-4 px-6 text-center">Cập nhật kho</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-customBeige/50 text-sm font-medium">
+                        <?php if (empty($variants)): ?>
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-warmGray">
+                                    <div class="text-4xl mb-2">📦</div>
+                                    Chưa có dữ liệu tồn kho trong hệ thống.
+                                </td>
+                            </tr>
                         <?php else: ?>
-                            <span class="badge-ok">Ổn định</span>
+                            <?php foreach ($variants as $v): ?>
+                                <tr class="hover:bg-customBeige/10 transition">
+                                    <td class="py-4 px-6 font-bold text-earthOrange font-mono text-xs">
+                                        <?= htmlspecialchars($v['sku'] ?? 'N/A') ?>
+                                    </td>
+                                    <td class="py-4 px-6 text-textMain font-semibold flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-customBeige/40 flex items-center justify-center text-lg flex-shrink-0">💐</div>
+                                        <span><?= htmlspecialchars($v['product_name'] ?? 'Sản phẩm') ?></span>
+                                    </td>
+                                    <td class="py-4 px-6 text-warmGray">
+                                        <span class="px-3 py-1 bg-customBeige/40 text-warmBrown rounded-full text-xs font-bold">
+                                            <?= htmlspecialchars(($v['color'] ?? '') . ' - ' . ($v['size'] ?? '')) ?>
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 font-semibold text-textMain">
+                                        <?= number_format($v['price'] ?? 0, 0, ',', '.') ?> đ
+                                    </td>
+                                    <td class="py-4 px-6 text-center">
+                                        <!-- Form cập nhật tồn kho từng dòng -->
+                                        <form action="/admin/updateStock" method="POST" class="inline-flex items-center justify-center gap-2">
+                                            <input type="hidden" name="variant_id" value="<?= $v['id'] ?>">
+                                            <input type="number" name="stock_quantity" value="<?= (int)($v['stock_quantity'] ?? 0) ?>" min="0" class="w-20 px-3 py-1.5 text-center bg-customBeige/20 border border-customBeige rounded-xl font-bold text-warmBrown focus:outline-none focus:ring-2 focus:ring-earthOrange/40 transition">
+                                    </td>
+                                    <td class="py-4 px-6 text-center">
+                                        <?php $qty = (int)($v['stock_quantity'] ?? 0); ?>
+                                        <?php if ($qty > 5): ?>
+                                            <span class="px-3 py-1 rounded-xl text-xs font-bold border bg-green-50 text-green-700 border-green-200">Ổn định</span>
+                                        <?php elseif ($qty > 0): ?>
+                                            <span class="px-3 py-1 rounded-xl text-xs font-bold border bg-amber-50 text-amber-700 border-amber-200">Sắp hết</span>
+                                        <?php else: ?>
+                                            <span class="px-3 py-1 rounded-xl text-xs font-bold border bg-red-50 text-red-700 border-red-200">Hết hàng</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="py-4 px-6 text-center">
+                                            <button type="submit" class="px-4 py-1.5 bg-earthOrange hover:bg-earthHover text-white rounded-xl text-xs font-bold transition shadow-xs">
+                                                Lưu
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
                         <?php endif; ?>
-                    </td>
-                    <td>
-                            <button type="submit" class="btn-save">Lưu</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <p style="color: #7f8c8d; margin-top: 20px;">Không có biến thể sản phẩm nào trong hệ thống.</p>
-    <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-6 text-center text-warmGray/70 text-xs font-semibold">
+        &copy; <?= date('Y') ?> hoa&amp;em boutique. Hệ thống quản trị nội bộ.
+    </footer>
+
 </body>
 </html>

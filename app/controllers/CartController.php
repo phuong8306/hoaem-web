@@ -1,57 +1,63 @@
 <?php
-require_once '../app/models/ProductModel.php';
+require_once __DIR__ . '/../models/OrderModel.php';
 
 class CartController {
-    public function __construct() {
-        // Khởi tạo giỏ hàng trong Session nếu chưa có
-        if (!isset($_SESSION['cart'])) {
-            $_SESSION['cart'] = [];
-        }
-    }
-
-    // Hiển thị giao diện giỏ hàng
-    public function index() {
-        View::render('cart/index', ['title' => 'Giỏ hàng của bạn']);
-    }
-
-    // Xử lý thêm sản phẩm vào giỏ
-    public function add() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $variantId = (int)$_POST['variant_id'];
-            $quantity = (int)$_POST['quantity'];
-
-            $productModel = new ProductModel();
-            $variant = $productModel->getVariantDetails($variantId);
-
-            if ($variant) {
-                // Nếu phân loại này đã có trong giỏ -> Cộng dồn số lượng
-                if (isset($_SESSION['cart'][$variantId])) {
-                    $_SESSION['cart'][$variantId]['quantity'] += $quantity;
-                } else {
-                    // Nếu chưa có -> Thêm mới vào giỏ
-                    $_SESSION['cart'][$variantId] = [
-                        'variant_id' => $variant['id'],
-                        'product_name' => $variant['product_name'],
-                        'slug' => $variant['slug'],
-                        'size' => $variant['size'],
-                        'color' => $variant['color'],
-                        'price' => $variant['price'],
-                        'quantity' => $quantity
-                    ];
-                }
-            }
-            // Chuyển hướng về trang giỏ hàng
-            header('Location: /cart');
+    // Hiển thị trang thanh toán
+    public function checkout() {
+        if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
+            echo "<script>alert('Giỏ hàng của bạn đang trống!'); window.location.href='/';</script>";
             exit();
         }
+
+        View::render('cart/checkout', [
+            'title' => 'Thanh toán đơn hàng'
+        ]);
     }
 
-    // Xóa 1 sản phẩm khỏi giỏ
-    public function remove($variantId = null) {
-        if ($variantId && isset($_SESSION['cart'][$variantId])) {
-            unset($_SESSION['cart'][$variantId]);
+    // Xử lý lưu đơn hàng vào CSDL
+    public function processCheckout() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
+                echo "<script>alert('Giỏ hàng trống!'); window.location.href='/';</script>";
+                exit();
+            }
+
+            $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null; // Cho phép khách vãng lai hoặc bắt buộc đăng nhập tùy ý
+            $fullname = trim($_POST['fullname']);
+            $phone = trim($_POST['phone']);
+            $address = trim($_POST['address']);
+            $paymentMethod = trim($_POST['payment_method']);
+
+            // Tính lại tổng tiền
+            $subTotal = 0;
+            foreach ($_SESSION['cart'] as $item) {
+                $subTotal += $item['price'] * $item['quantity'];
+            }
+
+            $discountTotal = 0;
+            if (isset($_SESSION['voucher'])) {
+                if ($_SESSION['voucher']['discount_percent'] > 0) {
+                    $discountTotal = ($subTotal * $_SESSION['voucher']['discount_percent']) / 100;
+                } else {
+                    $discountTotal = $_SESSION['voucher']['discount_amount'];
+                }
+                if ($discountTotal > $subTotal) $discountTotal = $subTotal;
+            }
+
+            $finalTotal = $subTotal - $discountTotal;
+
+            $orderModel = new OrderModel();
+            $orderId = $orderModel->createOrder($userId, $fullname, $phone, $address, $paymentMethod, $finalTotal, $_SESSION['cart']);
+
+            if ($orderId) {
+                // Xóa giỏ hàng và voucher sau khi đặt hàng thành công
+                unset($_SESSION['cart']);
+                unset($_SESSION['voucher']);
+
+                echo "<script>alert('Đặt hàng thành công! Mã đơn hàng của bạn là #" . $orderId . "'); window.location.href='/account/orders';</script>";
+            } else {
+                echo "<script>alert('Có lỗi xảy ra hoặc sản phẩm không đủ tồn kho, vui lòng thử lại!'); history.back();</script>";
+            }
         }
-        header('Location: /cart');
-        exit();
     }
 }

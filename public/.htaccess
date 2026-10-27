@@ -1,12 +1,5 @@
+Options -Indexes
 RewriteEngine On
-
-# 1. Bỏ qua assets, uploads, favicon — phục vụ file thẳng
-RewriteRule ^(assets|uploads|favicon\.ico) - [L]
-
-# 2. Bỏ qua file/thư mục thật
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# 3. Còn lại đẩy về index.php
-RewriteRule ^ index.php [QSA,L]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

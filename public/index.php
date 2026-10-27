@@ -67,6 +67,15 @@ if (!is_dir($appPath)) {
     $appPath = __DIR__ . '/app/';
 }
 
+// --- BẢO VỆ KHU VỰC QUẢN TRỊ ADMIN ---
+if (strpos($requestUri, '/admin') === 0) {
+    // Nếu chưa đăng nhập hoặc tài khoản không phải là admin thì chặn lại
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        echo "<script>alert('Bạn không có quyền truy cập khu vực quản trị!'); window.location.href='/auth/login';</script>";
+        exit();
+    }
+}
+
 // --- 3. ĐIỀU HƯỚNG ROUTING TOÀN DIỆN ---
 if ($requestUri !== '/' && str_ends_with($requestUri, '/')) {
     $requestUri = rtrim($requestUri, '/');

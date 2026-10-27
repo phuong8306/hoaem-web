@@ -114,26 +114,19 @@ $message = isset($message) ? $message : 'Khám phá thế giới hoa tươi';
             </form>
         </div>
 
-        <!-- Thanh danh mục -->
+        <!-- Thanh danh mục động từ Database -->
         <div class="flex items-center justify-start md:justify-center overflow-x-auto pb-4 mb-12 gap-2 sm:gap-3 no-scrollbar">
-            <a href="/" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm <?= !$selectedCategory ? 'bg-earthOrange text-white shadow-earthOrange/20' : 'bg-white text-warmGray hover:text-earthOrange border border-customBeige' ?>">
+            <a href="/" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm <?= empty($selectedCategory) ? 'bg-earthOrange text-white shadow-earthOrange/20' : 'bg-white text-warmGray hover:text-earthOrange border border-customBeige' ?>">
                 Tất cả
             </a>
-            <a href="/?type=bo-hoa" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-white text-warmGray hover:text-earthOrange border border-customBeige">
-                Bó hoa
-            </a>
-            <a href="/?type=gio-hoa" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-white text-warmGray hover:text-earthOrange border border-customBeige">
-                Giỏ hoa
-            </a>
-            <a href="/?type=hop-hoa" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-white text-warmGray hover:text-earthOrange border border-customBeige">
-                Hộp hoa
-            </a>
-            <a href="/?type=hoa-binh" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-white text-warmGray hover:text-earthOrange border border-customBeige">
-                Hoa bình
-            </a>
-            <a href="/?type=hoa-qua" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-white text-warmGray hover:text-earthOrange border border-customBeige">
-                Hoa kèm quà
-            </a>
+            <?php if (!empty($categories)): ?>
+                <?php foreach ($categories as $cat): ?>
+                    <?php $isActive = (isset($selectedCategory) && $selectedCategory == $cat['id']); ?>
+                    <a href="/?category_id=<?= $cat['id'] ?>" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm <?= $isActive ? 'bg-earthOrange text-white shadow-earthOrange/20' : 'bg-white text-warmGray hover:text-earthOrange border border-customBeige' ?>">
+                        <?= htmlspecialchars($cat['name']) ?>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
         <!-- Khu vực sản phẩm nổi bật -->
@@ -223,10 +216,19 @@ $message = isset($message) ? $message : 'Khám phá thế giới hoa tươi';
 
     </main>
 
-    <!-- Footer -->
+    <!-- Footer chuẩn boutique -->
     <footer class="bg-white border-t border-customBeige mt-auto relative z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-warmGray text-xs">
-            &copy; <?= date('Y') ?> hoa&amp;em. Tất cả quyền được bảo lưu.
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🌸</span>
+                <div>
+                    <span class="font-serif text-lg font-bold text-warmBrown tracking-tight">hoa&amp;em</span>
+                    <p class="text-xs text-warmGray">Chuyện hoa chuyện mình.</p>
+                </div>
+            </div>
+            <div class="text-warmGray text-xs font-medium">
+                &copy; <?= date('Y') ?> hoa&amp;em boutique. All rights reserved.
+            </div>
         </div>
     </footer>
 

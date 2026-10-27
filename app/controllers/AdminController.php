@@ -2,15 +2,17 @@
 require_once '../app/models/OrderModel.php';
 require_once '../app/models/ProductModel.php';
 require_once '../app/models/UserModel.php';
+require_once '../app/models/ReviewModel.php';
+require_once '../app/models/VoucherModel.php';
 
 class AdminController {
     // Middleware kiểm tra quyền truy cập Admin
     public function __construct() {
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            echo "<script>alert('Truy cập bị từ chối! Bạn không có quyền quản trị.'); window.location.href='/';</script>";
-            exit();
-        }
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        echo "<script>alert('Truy cập bị từ chối! Bạn không có quyền quản trị.'); window.location.href='/';</script>";
+        exit();
     }
+}
 
     public function orders() {
         $orderModel = new OrderModel();
@@ -132,5 +134,72 @@ class AdminController {
             'title' => 'Quản trị - Quản lý Khách hàng',
             'customers' => $customers
         ]);
+    }
+
+    public function reviews() {
+        $reviewModel = new ReviewModel();
+        $reviews = $reviewModel->getAllReviewsForAdmin();
+
+        View::render('admin/reviews', [
+            'title' => 'Quản trị - Quản lý Đánh giá',
+            'reviews' => $reviews
+        ]);
+    }
+
+    public function deleteReview($id) {
+        if ($id) {
+            $reviewModel = new ReviewModel();
+            if ($reviewModel->deleteReview($id)) {
+                echo "<script>alert('Xóa đánh giá thành công!'); window.location.href='/admin/reviews';</script>";
+            } else {
+                echo "<script>alert('Không thể xóa đánh giá này!'); history.back();</script>";
+            }
+        }
+    }
+
+    // --- QUẢN LÝ MÃ GIẢM GIÁ (VOUCHERS) ---
+
+    public function vouchers() {
+        $voucherModel = new VoucherModel();
+        $vouchers = $voucherModel->getAllVouchers();
+
+        View::render('admin/vouchers', [
+            'title' => 'Quản trị - Quản lý Mã giảm giá',
+            'vouchers' => $vouchers
+        ]);
+    }
+
+    public function createVoucher() {
+        View::render('admin/voucher_add', [
+            'title' => 'Thêm mã giảm giá mới'
+        ]);
+    }
+
+    public function storeVoucher() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $code = strtoupper(trim($_POST['code']));
+            $discountPercent = (int)$_POST['discount_percent'];
+            $discountAmount = (float)$_POST['discount_amount'];
+            $minOrderValue = (float)$_POST['min_order_value'];
+            $expiryDate = $_POST['expiry_date'];
+
+            $voucherModel = new VoucherModel();
+            if ($voucherModel->addVoucher($code, $discountPercent, $discountAmount, $minOrderValue, $expiryDate)) {
+                echo "<script>alert('Thêm mã giảm giá thành công!'); window.location.href='/admin/vouchers';</script>";
+            } else {
+                echo "<script>alert('Lỗi: Mã giảm giá có thể bị trùng!'); history.back();</script>";
+            }
+        }
+    }
+
+    public function deleteVoucher($id) {
+        if ($id) {
+            $voucherModel = new VoucherModel();
+            if ($voucherModel->deleteVoucher($id)) {
+                echo "<script>alert('Xóa mã giảm giá thành công!'); window.location.href='/admin/vouchers';</script>";
+            } else {
+                echo "<script>alert('Không thể xóa mã này!'); history.back();</script>";
+            }
+        }
     }
 }
