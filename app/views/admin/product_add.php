@@ -2,76 +2,106 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title><?= htmlspecialchars($title) ?></title>
-    <style>
-        .form-container { max-width: 600px; margin: 30px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .row { display: flex; gap: 15px; }
-        .col { flex: 1; }
-        .btn-submit { background: #27ae60; color: white; padding: 12px 20px; border: none; width: 100%; font-size: 16px; cursor: pointer; border-radius: 4px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= htmlspecialchars($title ?? 'Quản trị - Thêm sản phẩm mới') ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Be Vietnam Pro"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
+                    colors: { earthOrange: '#C96F4E', earthHover: '#b55f3e', warmBrown: '#8B5E3C', customBeige: '#F3E7D9', warmGray: '#686B6B', textMain: '#382A32' }
+                }
+            }
+        }
+    </script>
+    <style> body { color: #382A32; font-family: 'Be Vietnam Pro', sans-serif; background-color: #FDF7F2; } </style>
 </head>
-<body style="padding: 20px; font-family: sans-serif; background: #f8f9fa;">
-    <div class="form-container">
-        <a href="/admin/products" style="text-decoration: none; color: #3498db;">&larr; Quay lại danh sách sản phẩm</a>
-        <h2 style="color: #2c3e50; text-align: center;">Thêm Sản Phẩm Mới</h2>
+<body class="min-h-screen flex flex-col antialiased selection:bg-earthOrange selection:text-white">
 
-        <form method="POST" action="/admin/storeProduct">
-            <div class="form-group">
-                <label>Tên sản phẩm:</label>
-                <input type="text" name="name" required placeholder="Ví dụ: Bó Hoa Hướng Dương Tươi">
+    <!-- Top Navigation Bar -->
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-customBeige py-4 px-6 md:px-10 flex justify-between items-center sticky top-0 z-30 shadow-sm">
+        <a href="/" class="flex items-center gap-3 group cursor-pointer text-decoration-none">
+            <span class="text-3xl transition group-hover:scale-110">🌸</span>
+            <div>
+                <span class="font-serif text-2xl font-bold text-warmBrown tracking-tight group-hover:text-earthOrange transition">hoa&amp;em</span>
+                <span class="block text-[10px] font-bold text-earthOrange uppercase tracking-widest">Admin Dashboard</span>
             </div>
+        </a>
+        <div class="flex items-center gap-4">
+            <span class="text-xs font-semibold text-warmGray hidden md:inline">Xin chào, <b class="text-textMain"><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></b></span>
+            <a href="/auth/logout" class="px-4 py-2 bg-customBeige/40 hover:bg-red-50 hover:text-red-600 text-warmBrown rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-customBeige"><span>Đăng xuất</span> ➜</a>
+        </div>
+    </header>
 
-            <div class="form-group">
-                <label>Đường dẫn Slug (Dùng cho URL):</label>
-                <input type="text" name="slug" required placeholder="bo-hoa-huong-duong-tuoi">
-            </div>
-
-            <div class="form-group">
-                <label>Danh mục:</label>
-                <select name="category_id" required>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="row">
-                <div class="col form-group">
-                    <label>Mã SKU biến thể:</label>
-                    <input type="text" name="sku" required placeholder="HD-V1">
-                </div>
-                <div class="col form-group">
-                    <label>Kích thước (Size):</label>
-                    <input type="text" name="size" required placeholder="M hoặc L">
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col form-group">
-                    <label>Màu sắc:</label>
-                    <input type="text" name="color" required placeholder="Vàng">
-                </div>
-                <div class="col form-group">
-                    <label>Giá bán (VNĐ):</label>
-                    <input type="number" name="price" required placeholder="450000">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Số lượng tồn kho ban đầu:</label>
-                <input type="number" name="stock" value="10" min="0" required>
-            </div>
-
-            <div class="form-group">
-                <label>Mô tả chi tiết:</label>
-                <textarea name="description" rows="4" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea>
-            </div>
-
-            <button type="submit" class="btn-submit">Lưu Sản Phẩm</button>
-        </form>
+    <!-- Sub Navbar -->
+    <div class="bg-white/80 backdrop-blur-sm border-b border-customBeige px-6 md:px-10 py-3.5 shadow-xs">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center gap-2.5 text-xs sm:text-sm font-medium">
+            <a href="/admin/orders" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Đơn hàng</a>
+            <a href="/admin/products" class="px-4 py-2 rounded-xl bg-earthOrange text-white shadow-sm shadow-earthOrange/25 transition duration-200 font-semibold">Quản lý Sản phẩm</a>
+            <a href="/admin/inventory" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Tồn kho</a>
+            <a href="/admin/analytics" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Báo cáo &amp; Phân tích</a>
+            <a href="/admin/customers" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Khách hàng</a>
+            <a href="/admin/reviews" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Đánh giá</a>
+            <a href="/admin/vouchers" class="px-4 py-2 rounded-xl text-warmGray hover:bg-earthOrange/10 hover:text-earthOrange transition duration-200">Quản lý Voucher</a>
+        </div>
     </div>
+
+    <!-- Main Form Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="font-serif text-3xl font-bold text-warmBrown">Thêm sản phẩm mới</h1>
+                <p class="text-xs text-warmGray mt-1">Nhập thông tin chi tiết để trưng bày bó hoa mới lên cửa hàng.</p>
+            </div>
+            <a href="/admin/products" class="px-4 py-2 bg-customBeige/40 hover:bg-customBeige text-warmBrown rounded-xl text-xs font-bold transition border border-customBeige">← Quay lại danh sách</a>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-sm border border-customBeige p-8">
+            <form action="/admin/storeProduct" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-bold text-warmBrown uppercase tracking-wider mb-2">Tên sản phẩm hoa</label>
+                    <input type="text" name="name" required placeholder="Ví dụ: Bó hoa hồng Ecuador lãng mạn..." class="w-full px-5 py-3.5 bg-customBeige/20 border border-customBeige rounded-2xl text-sm font-medium text-textMain focus:outline-none focus:ring-2 focus:ring-earthOrange/40 transition">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-warmBrown uppercase tracking-wider mb-2">Danh mục</label>
+                        <select name="category_id" class="w-full px-5 py-3.5 bg-customBeige/20 border border-customBeige rounded-2xl text-sm font-medium text-textMain focus:outline-none focus:ring-2 focus:ring-earthOrange/40 transition">
+                            <option value="">-- Chọn danh mục hoa --</option>
+                            <?php if (!empty($categories)): foreach($categories as $cat): ?>
+                                <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-warmBrown uppercase tracking-wider mb-2">Giá bán cơ bản (VNĐ)</label>
+                        <input type="number" name="price" required min="0" placeholder="Ví dụ: 550000" class="w-full px-5 py-3.5 bg-customBeige/20 border border-customBeige rounded-2xl text-sm font-medium text-textMain focus:outline-none focus:ring-2 focus:ring-earthOrange/40 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-warmBrown uppercase tracking-wider mb-2">Hình ảnh sản phẩm</label>
+                    <!-- Thay input type="text" thành type="file" -->
+                    <input type="file" name="image" accept="image/*" class="w-full px-4 py-3 rounded-xl border border-customBeige bg-white text-textMain focus:outline-none focus:border-earthOrange focus:ring-1 focus:ring-earthOrange transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-warmBrown uppercase tracking-wider mb-2">Mô tả chi tiết sản phẩm</label>
+                    <textarea name="description" rows="4" placeholder="Ý nghĩa bó hoa, thành phần các loài hoa bên trong..." class="w-full px-5 py-3.5 bg-customBeige/20 border border-customBeige rounded-2xl text-sm font-medium text-textMain focus:outline-none focus:ring-2 focus:ring-earthOrange/40 transition"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-4 pt-4 border-t border-customBeige">
+                    <a href="/admin/products" class="px-6 py-3 bg-customBeige/40 hover:bg-customBeige text-warmBrown rounded-2xl text-sm font-bold transition">Hủy bỏ</a>
+                    <button type="submit" class="px-8 py-3 bg-earthOrange hover:bg-earthHover text-white rounded-2xl text-sm font-bold transition shadow-md shadow-earthOrange/20">Lưu sản phẩm mới</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="w-full py-6 text-center text-warmGray/70 text-xs font-semibold">&copy; <?= date('Y') ?> hoa&amp;em boutique. Hệ thống quản trị nội bộ.</footer>
 </body>
 </html>

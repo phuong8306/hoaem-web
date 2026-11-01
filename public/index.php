@@ -7,7 +7,7 @@ $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if ($requestUri === '/test_conn.php') {
     $host = 'hoaem-db';
     $port = '3306';
-    $dbname = 'hoavaem'; // Đổi lại thành hoavaem
+    $dbname = 'hoavaem';
     $username = 'root';
     $password = 'root';
     try {
@@ -38,7 +38,7 @@ if (!class_exists('Database')) {
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
                 ]);
             } catch (PDOException $e) {
-                die("<h3 style='color:red; text-align:center; margin-top:50px;'>Lỗi kết nối CSDL: " . $e->getMessage() . "<br><br>Hãy chắc chắn container đang chạy và tên database là 'flower_shop'!</h3>");
+                die("<h3 style='color:red; text-align:center; margin-top:50px;'>Lỗi kết nối CSDL: " . $e->getMessage() . "</h3>");
             }
         }
     }
@@ -69,7 +69,6 @@ if (!is_dir($appPath)) {
 
 // --- BẢO VỆ KHU VỰC QUẢN TRỊ ADMIN ---
 if (strpos($requestUri, '/admin') === 0) {
-    // Nếu chưa đăng nhập hoặc tài khoản không phải là admin thì chặn lại
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         echo "<script>alert('Bạn không có quyền truy cập khu vực quản trị!'); window.location.href='/auth/login';</script>";
         exit();
@@ -85,6 +84,18 @@ if ($requestUri !== '/' && str_ends_with($requestUri, '/')) {
 if ($requestUri === '' || $requestUri === '/') {
     require_once $appPath . 'controllers/HomeController.php';
     (new HomeController())->index();
+}
+elseif ($requestUri === '/products') {
+    require_once $appPath . 'controllers/HomeController.php';
+    (new HomeController())->products();
+}
+elseif ($requestUri === '/about') {
+    require_once $appPath . 'controllers/HomeController.php';
+    (new HomeController())->about();
+}
+elseif ($requestUri === '/contact') {
+    require_once $appPath . 'controllers/HomeController.php';
+    (new HomeController())->contact();
 }
 // Xác thực tài khoản
 elseif ($requestUri === '/auth/login') {
@@ -112,7 +123,7 @@ elseif ($requestUri === '/product/storeReview') {
     require_once $appPath . 'controllers/ProductController.php';
     (new ProductController())->storeReview();
 }
-// Giỏ hàng, Cập nhật, Xóa, Voucher & Thanh toán (Checkout)
+// Giỏ hàng & Thanh toán
 elseif ($requestUri === '/cart') {
     require_once $appPath . 'controllers/CartController.php';
     (new CartController())->index();
@@ -149,7 +160,7 @@ elseif ($requestUri === '/cart/processCheckout') {
     require_once $appPath . 'controllers/CartController.php';
     (new CartController())->processCheckout();
 }
-// Tài khoản khách hàng & Lịch sử đơn hàng
+// Tài khoản khách hàng
 elseif ($requestUri === '/account/orders') {
     require_once $appPath . 'controllers/AccountController.php';
     (new AccountController())->orders();
@@ -158,6 +169,20 @@ elseif (preg_match('#^/account/orderDetail/(\d+)$#', $requestUri, $matches)) {
     require_once $appPath . 'controllers/AccountController.php';
     (new AccountController())->orderDetail($matches[1]);
 }
+
+// 👉 ĐÃ BỔ SUNG: Quản trị Admin - Trang chủ / Dashboard quản lý
+elseif ($requestUri === '/admin' || $requestUri === '/admin/dashboard') {
+    require_once $appPath . 'controllers/AdminController.php';
+    $adminCtrl = new AdminController();
+    if (method_exists($adminCtrl, 'dashboard')) {
+        $adminCtrl->dashboard();
+    } elseif (method_exists($adminCtrl, 'index')) {
+        $adminCtrl->index();
+    } else {
+        $adminCtrl->orders(); // Fallback sang trang quản lý đơn hàng nếu chưa có hàm dashboard/index
+    }
+}
+
 // Quản trị Admin - Đơn hàng
 elseif ($requestUri === '/admin/orders') {
     require_once $appPath . 'controllers/AdminController.php';
@@ -227,6 +252,32 @@ elseif ($requestUri === '/admin/storeVoucher') {
 elseif (preg_match('#^/admin/deleteVoucher/(\d+)$#', $requestUri, $matches)) {
     require_once $appPath . 'controllers/AdminController.php';
     (new AdminController())->deleteVoucher($matches[1]);
+}
+// Quản trị Admin - Danh mục (Categories)
+elseif ($requestUri === '/admin/categories') {
+    require_once $appPath . 'controllers/AdminController.php';
+    (new AdminController())->categories();
+}
+elseif ($requestUri === '/admin/category/add') {
+    require_once $appPath . 'controllers/AdminController.php';
+    (new AdminController())->categoryAdd();
+}
+elseif ($requestUri === '/admin/category/store') {
+    require_once $appPath . 'controllers/AdminController.php';
+    (new AdminController())->storeCategory();
+}
+elseif (preg_match('#^/admin/category/delete/(\d+)$#', $requestUri, $matches)) {
+    require_once $appPath . 'controllers/AdminController.php';
+    (new AdminController())->deleteCategory($matches[1]);
+}
+// Quản trị Admin - Tin nhắn khách hàng
+elseif ($requestUri === '/admin/messages') {
+    require_once $appPath . 'controllers/AdminController.php';
+    (new AdminController())->messages();
+}
+elseif (preg_match('#^/admin/deleteMessage/(\d+)$#', $requestUri, $matches)) {
+    require_once $appPath . 'controllers/AdminController.php';
+    (new AdminController())->deleteMessage($matches[1]);
 }
 // Lỗi 404
 else {

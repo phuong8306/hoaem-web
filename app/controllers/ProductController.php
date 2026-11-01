@@ -1,8 +1,45 @@
 <?php
-require_once '../app/models/ProductModel.php';
-require_once '../app/models/ReviewModel.php';
+require_once __DIR__ . '/../models/ProductModel.php';
+require_once __DIR__ . '/../models/ReviewModel.php';
+require_once __DIR__ . '/../models/OccasionModel.php';
 
 class ProductController {
+    
+    // Trang danh sách sản phẩm chính (Dùng nếu route /products trỏ vào đây)
+    public function index() {
+        $productModel = new ProductModel();
+        $occasionModel = new OccasionModel();
+        
+        $categories = $productModel->getCategories();
+        $occasions = $occasionModel->getAllOccasions();
+
+        $categoryId = isset($_GET['category_id']) ? (int)$_GET['category_id'] : null;
+
+        if ($categoryId) {
+            $products = $productModel->getProductsByCategoryId($categoryId);
+            $message = 'Danh mục sản phẩm';
+        } else {
+            // Sắp xếp mới nhất đến cũ nhất
+            if (method_exists($productModel, 'getAllProductsSortedByNewest')) {
+                $products = $productModel->getAllProductsSortedByNewest();
+            } else {
+                $products = $productModel->getAllProductsForHome();
+            }
+            $message = 'Danh sách sản phẩm hoa tươi mới nhất';
+        }
+
+        $data = [
+            'title' => 'Sản Phẩm - HoaEm Boutique',
+            'categories' => $categories,
+            'products' => $products,
+            'selectedCategory' => $categoryId,
+            'message' => $message,
+            'occasions' => $occasions
+        ];
+
+        View::render('product/list', $data);
+    }
+
     public function detail($slug = null) {
         if (!$slug) {
             echo "Lỗi: Không tìm thấy sản phẩm.";
@@ -19,7 +56,6 @@ class ProductController {
 
         $variants = $productModel->getVariantsByProductId($product['id']);
 
-        // Lấy danh sách đánh giá của sản phẩm
         $reviewModel = new ReviewModel();
         $reviews = $reviewModel->getReviewsByProductId($product['id']);
 
@@ -33,7 +69,6 @@ class ProductController {
         View::render('product/detail', $data);
     }
 
-    // Xử lý lưu đánh giá sản phẩm
     public function storeReview() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_SESSION['user_id'])) {
@@ -59,12 +94,14 @@ class ProductController {
         }
     }
 
-    // Xử lý tìm kiếm sản phẩm
     public function search() {
         $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
         
         $productModel = new ProductModel();
+        $occasionModel = new OccasionModel();
+        
         $categories = $productModel->getCategories();
+        $occasions = $occasionModel->getAllOccasions();
         $products = $productModel->searchProducts($keyword);
 
         $data = [
@@ -73,10 +110,10 @@ class ProductController {
             'categories' => $categories,
             'selectedCategory' => null,
             'products' => $products,
-            'currentPage' => 1,
-            'totalPages' => 1
+            'occasions' => $occasions
         ];
 
-        View::render('home/index', $data);
+        // ĐÃ SỬA: Render về đúng product/list để giữ giao diện trang sản phẩm chuẩn xác
+        View::render('product/list', $data);
     }
 }

@@ -117,22 +117,30 @@ public function getAllProductsForHome() {
         return $stmt->execute([$id]);
     }
 
-    public function addProduct($categoryId, $name, $slug, $description, $price, $stock, $size, $color, $sku) {
+    // 1. Thêm tham số $imagePath vào cuối cùng
+    public function addProduct($categoryId, $name, $slug, $description, $price, $stock, $size, $color, $sku, $imagePath) {
         try {
             $this->pdo->beginTransaction();
-            $stmt = $this->pdo->prepare("INSERT INTO products (category_id, name, slug, description) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$categoryId, $name, $slug, $description]);
+            
+            // 👉 Đổi 'image_url' thành 'image' cho khớp với CSDL của ní
+            $stmt = $this->pdo->prepare("INSERT INTO products (category_id, name, slug, description, image) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$categoryId, $name, $slug, $description, $imagePath]);
+            
             $productId = $this->pdo->lastInsertId();
 
             $stmtVar = $this->pdo->prepare("INSERT INTO product_variants (product_id, sku, size, color, price, stock_quantity, is_default) VALUES (?, ?, ?, ?, ?, ?, 1)");
             $stmtVar->execute([$productId, $sku, $size, $color, $price, $stock]);
-
+            
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-            $this->pdo->rollBack();
-            return false;
-        }
+        $this->pdo->rollBack();
+        // Bắt buộc in lỗi SQL màu đỏ ra để mình nhìn thấy
+        echo "<pre style='background: black; color: #00ff00; padding: 15px; font-size: 16px;'>";
+        print_r($e->getMessage());
+        echo "</pre>";
+        exit; // Dừng chương trình lại ngay lập tức tại đây
+    }
     }
 
     public function getAllVariantsForInventory() {

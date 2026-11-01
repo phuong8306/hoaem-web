@@ -64,17 +64,48 @@ if (!empty($product['price'])) {
 <body class="min-h-screen flex flex-col justify-between antialiased selection:bg-earthOrange selection:text-white relative overflow-x-hidden">
 
     <!-- Header -->
-    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-customBeige transition-all">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 group">
-                <span class="text-2xl">🌸</span>
-                <span class="font-serif text-2xl font-bold text-warmBrown tracking-tight group-hover:opacity-90 transition">hoa&amp;em</span>
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-customBeige/60 transition-all shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
+            
+            <!-- Logo tinh gọn, sắc sảo -->
+            <a href="/" class="flex items-center gap-2 group py-1">
+                <img src="/assets/img/products/logo-moi.png" alt="Shop hoa tươi HoaEm" class="h-9 sm:h-10 w-auto object-contain group-hover:scale-105 transition duration-300">
             </a>
-            <nav class="flex items-center gap-4 sm:gap-6 text-sm sm:text-base font-medium">
-                <a href="/cart" class="text-warmGray hover:text-earthOrange transition flex items-center gap-1.5 py-2">
+            
+            <!-- Menu điều hướng đồng bộ màu ấm áp -->
+            <nav class="flex items-center gap-5 sm:gap-7 text-sm sm:text-base font-medium">
+                <a href="/cart" class="text-warmBrown hover:text-earthOrange transition flex items-center gap-1.5 py-1">
                     <span class="text-lg">🛒</span> 
                     <span class="hidden sm:inline">Giỏ hàng</span>
                 </a>
+                
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="flex items-center gap-3 pl-3 border-l border-customBeige">
+                        <a href="/account/orders" class="flex items-center gap-2 group">
+                            <?php if (!empty($_SESSION['avatar'])): ?>
+                                <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-earthOrange/40 group-hover:scale-105 transition">
+                            <?php else: ?>
+                                <div class="w-8 h-8 rounded-full bg-earthOrange text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:bg-earthHover transition">
+                                    <?= mb_strtoupper(mb_substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
+                                </div>
+                            <?php endif; ?>
+                            <span class="hidden md:inline font-semibold text-warmBrown group-hover:text-earthOrange transition">
+                                <?= htmlspecialchars($_SESSION['username'] ?? 'Tài khoản') ?>
+                            </span>
+                        </a>
+
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                            <a href="/admin/orders" class="text-amber-700 hover:text-amber-800 transition font-semibold text-xs bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">Quản trị</a>
+                        <?php endif; ?>
+
+                        <a href="/auth/logout" class="text-red-500 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition" title="Đăng xuất">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <a href="/auth/login" class="text-warmBrown hover:text-earthOrange transition font-medium">Đăng nhập</a>
+                    <a href="/auth/register" class="bg-earthOrange hover:bg-earthHover text-white px-5 py-2 rounded-full transition shadow-sm font-semibold text-sm">Đăng ký</a>
+                <?php endif; ?>
             </nav>
         </div>
     </header>

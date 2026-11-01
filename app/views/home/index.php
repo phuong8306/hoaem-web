@@ -1,25 +1,19 @@
 <?php
+// Đảm bảo các biến dữ liệu tồn tại từ HomeController
 $products = isset($products) ? $products : [];
-$categories = isset($categories) ? $categories : [];
-$selectedCategory = isset($selectedCategory) ? $selectedCategory : null;
-$message = isset($message) ? $message : 'Khám phá thế giới hoa tươi';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars($title ?? 'HoaEm - Tiệm Hoa Tươi Trực Tuyến') ?></title>
+    <title>HoaEm - Tiệm Hoa Tươi Trực Tuyến</title>
     
-    <!-- Google Fonts: Be Vietnam Pro & Playfair Display -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-    
-    <!-- Nhúng Tailwind CSS qua CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Cấu hình bảng màu Cam đất ấm áp -->
     <script>
         tailwind.config = {
             theme: {
@@ -29,12 +23,12 @@ $message = isset($message) ? $message : 'Khám phá thế giới hoa tươi';
                         serif: ['"Playfair Display"', 'serif'],
                     },
                     colors: {
-                        earthOrange: '#C96F4E', 
-                        earthHover: '#b55f3e',  
-                        warmBrown: '#8B5E3C',   
-                        customBeige: '#F3E7D9', 
-                        warmGray: '#686B6B',    
-                        textMain: '#382A32',    
+                        earthOrange: '#C86D53', 
+                        earthHover: '#A85A43',
+                        warmBrown: '#5C4033',   
+                        customBeige: '#FAF4EF', 
+                        warmGray: '#8A7A71',    
+                        textMain: '#3E2F28',    
                     }
                 }
             }
@@ -42,192 +36,246 @@ $message = isset($message) ? $message : 'Khám phá thế giới hoa tươi';
     </script>
     <style>
         body { 
-            color: #382A32; 
+            color: #3E2F28; 
             font-family: 'Be Vietnam Pro', sans-serif;
-            background: url('/assets/img/bg-floral.png') no-repeat center center fixed;
+            background: url('/assets/img/bg-floral.png') no-repeat top center fixed;
             background-size: cover;
-            background-color: #FDF7F2; 
+            background-color: #FAF4EF;
+        }
+        /* Chỉ áp dụng hiệu ứng cho riêng khu vực trang chủ */
+        .home-main-wrapper .reveal-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .home-main-wrapper .reveal-up.active {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-earthOrange selection:text-white relative overflow-x-hidden">
+<body class="antialiased min-h-screen flex flex-col selection:bg-earthOrange selection:text-white">
 
-    <!-- Header chuẩn phong cách Boutique, thon gọn và tinh tế -->
-    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-customBeige/60 transition-all shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
-            
-            <!-- Logo tinh gọn, sắc sảo -->
+    <!-- HEADER: ĐÃ HOÀN THIỆN NÚT QUẢN TRỊ VÀ NÚT ĐĂNG XUẤT CHUẨN MẪU -->
+    <header class="sticky top-0 w-full bg-[#FAF4EF]/95 backdrop-blur-md z-50 border-b border-earthOrange/10 shadow-sm py-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <a href="/" class="flex items-center gap-2 group py-1">
-                <img src="/assets/img/logo-moi.png" alt="Shop hoa tươi HoaEm" class="h-9 sm:h-10 w-auto object-contain group-hover:scale-105 transition duration-300">
+                <img src="/assets/img/products/logo-moi.png" alt="Shop hoa tươi HoaEm" class="h-9 sm:h-10 w-auto object-contain mix-blend-multiply group-hover:scale-105 transition duration-300">
             </a>
             
-            <!-- Menu điều hướng đồng bộ màu ấm áp -->
-            <nav class="flex items-center gap-5 sm:gap-7 text-sm sm:text-base font-medium">
-                <a href="/cart" class="text-warmBrown hover:text-earthOrange transition flex items-center gap-1.5 py-1">
-                    <span class="text-lg">🛒</span> 
-                    <span class="hidden sm:inline">Giỏ hàng</span>
-                </a>
-                
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <div class="flex items-center gap-3 pl-3 border-l border-customBeige">
-                        <a href="/account/orders" class="flex items-center gap-2 group">
-                            <?php if (!empty($_SESSION['avatar'])): ?>
-                                <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-earthOrange/40 group-hover:scale-105 transition">
-                            <?php else: ?>
-                                <div class="w-8 h-8 rounded-full bg-earthOrange text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:bg-earthHover transition">
-                                    <?= mb_strtoupper(mb_substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
-                                </div>
-                            <?php endif; ?>
-                            <span class="hidden md:inline font-semibold text-warmBrown group-hover:text-earthOrange transition">
-                                <?= htmlspecialchars($_SESSION['username'] ?? 'Tài khoản') ?>
-                            </span>
-                        </a>
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-warmBrown">
+                <a href="/" class="<?= ($_SERVER['REQUEST_URI'] === '/' || $_SERVER['REQUEST_URI'] === '/index.php') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Trang chủ</a>
+                <a href="/products" class="<?= str_contains($_SERVER['REQUEST_URI'], '/products') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Sản phẩm</a>
+                <a href="/about" class="<?= str_contains($_SERVER['REQUEST_URI'], '/about') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Giới thiệu</a>
+                <a href="/contact" class="<?= str_contains($_SERVER['REQUEST_URI'], '/contact') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Liên hệ</a>
+            </nav>
 
+            <div class="flex items-center gap-4">
+                <a href="/cart" class="text-warmBrown hover:text-earthOrange relative">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span class="absolute -top-2 -right-2 bg-earthOrange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                </a>
+
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="flex items-center gap-2">
                         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="/admin/orders" class="text-amber-700 hover:text-amber-800 transition font-semibold text-xs bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">Quản trị</a>
+                            <a href="/admin" class="px-4 py-2 bg-earthOrange text-white rounded-full text-xs font-semibold hover:bg-earthHover transition shadow-sm">Trang quản lý</a>
+                        <?php else: ?>
+                            <a href="/account" class="px-4 py-2 border border-earthOrange text-earthOrange rounded-full text-xs font-semibold hover:bg-earthOrange hover:text-white transition">Tài khoản</a>
                         <?php endif; ?>
 
-                        <a href="/auth/logout" class="text-red-500 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition" title="Đăng xuất">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <!-- Nút Đăng xuất chuẩn mẫu thiết kế mới -->
+                        <a href="/auth/logout" class="px-4 py-2 bg-customBeige border border-earthOrange/20 hover:border-earthOrange text-warmBrown rounded-full text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <span>Đăng xuất</span>
+                            <span class="text-earthOrange font-bold">&rarr;</span>
                         </a>
                     </div>
                 <?php else: ?>
-                    <a href="/auth/login" class="text-warmBrown hover:text-earthOrange transition font-medium">Đăng nhập</a>
-                    <a href="/auth/register" class="bg-earthOrange hover:bg-earthHover text-white px-5 py-2 rounded-full transition shadow-sm font-semibold text-sm">Đăng ký</a>
+                    <div class="hidden sm:flex items-center gap-3 border-l border-earthOrange/20 pl-4">
+                        <a href="/auth/login" class="text-warmBrown hover:text-earthOrange text-sm font-semibold transition">Đăng nhập</a>
+                        <a href="/auth/register" class="px-5 py-2 bg-[#C86D53] text-white rounded-full text-sm font-semibold hover:bg-earthHover transition shadow-sm">Đăng ký</a>
+                    </div>
                 <?php endif; ?>
-            </nav>
+            </div>
         </div>
     </header>
 
-    <!-- Nội Dung Chính -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full relative z-10">
+    <!-- BẮT ĐẦU: BODY TRANG CHỦ -->
+    <main class="flex-grow w-full relative z-10 home-main-wrapper pb-16">
         
-        <!-- Thanh tìm kiếm -->
-        <div class="max-w-2xl mx-auto mb-10">
-            <form action="/product/search" method="GET" class="flex bg-white rounded-full shadow-sm border border-customBeige overflow-hidden focus-within:ring-2 focus-within:ring-earthOrange/30 focus-within:border-earthOrange transition-all">
-                <input type="text" name="keyword" placeholder="Tìm kiếm bó hoa yêu thích..." required 
-                       class="w-full px-6 py-4 outline-none text-textMain bg-transparent text-sm sm:text-base placeholder-warmGray/60 font-medium">
-                <button type="submit" class="bg-earthOrange hover:bg-earthHover text-white px-8 py-4 text-sm sm:text-base font-semibold transition flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <span class="hidden sm:inline">Tìm kiếm</span>
-                </button>
-            </form>
-        </div>
+        <!-- Khu vực 1: Hero Banner -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 reveal-up">
+            <div class="flex flex-col md:flex-row items-center gap-10 lg:gap-16">
+                <div class="w-full md:w-1/2 space-y-6 text-center md:text-left">
+                    <span class="inline-flex items-center gap-2 bg-red-50 text-earthOrange text-[10px] sm:text-xs font-bold px-4 py-1.5 rounded-full border border-earthOrange/20 uppercase tracking-widest">
+                        ⭐ Tiệm hoa tươi trực tuyến
+                    </span>
+                    
+                    <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-warmBrown leading-tight">
+                        Gửi yêu thương<br>qua từng <span class="italic text-earthOrange font-serif">cánh hoa</span>
+                    </h1>
+                    
+                    <p class="text-warmGray text-sm md:text-base leading-relaxed max-w-lg mx-auto md:mx-0">
+                        HoaEm Boutique thay bạn gửi gắm trọn vẹn tâm tư và những hoài niệm đẹp đẽ nhất đến người thương qua từng thiết kế hoa tươi tinh tế.
+                    </p>
+                    
+                    <div class="pt-2">
+                        <a href="/products" class="inline-flex items-center justify-center gap-2 bg-earthOrange hover:bg-earthHover text-white px-8 py-3.5 rounded-full font-semibold text-sm transition shadow-lg shadow-earthOrange/30">
+                            Khám phá bộ sưu tập &rarr;
+                        </a>
+                    </div>
+                </div>
 
-        <!-- Thanh danh mục động từ Database -->
-        <div class="flex items-center justify-start md:justify-center overflow-x-auto pb-4 mb-12 gap-2 sm:gap-3 no-scrollbar">
-            <a href="/" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm <?= empty($selectedCategory) ? 'bg-earthOrange text-white shadow-earthOrange/20' : 'bg-white text-warmGray hover:text-earthOrange border border-customBeige' ?>">
-                Tất cả
-            </a>
-            <?php if (!empty($categories)): ?>
-                <?php foreach ($categories as $cat): ?>
-                    <?php $isActive = (isset($selectedCategory) && $selectedCategory == $cat['id']); ?>
-                    <a href="/?category_id=<?= $cat['id'] ?>" class="px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm <?= $isActive ? 'bg-earthOrange text-white shadow-earthOrange/20' : 'bg-white text-warmGray hover:text-earthOrange border border-customBeige' ?>">
-                        <?= htmlspecialchars($cat['name']) ?>
-                    </a>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-
-        <!-- Khu vực sản phẩm nổi bật -->
-        <div class="mb-14">
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 border-b border-customBeige pb-4">
-                <div>
-                    <span class="text-earthOrange font-semibold text-sm tracking-wider uppercase">Bộ sưu tập độc quyền</span>
-                    <h2 class="font-serif text-3xl font-bold text-warmBrown mt-1"><?= htmlspecialchars($message) ?></h2>
-                    <span class="block text-xs text-earthOrange mt-1 tracking-widest">✦ ── ✦ ── ✦</span>
+                <div class="w-full md:w-1/2 relative mt-6 md:mt-0">
+                    <div class="rounded-[2.5rem] overflow-hidden shadow-2xl relative border-4 border-white/60 group">
+                        <img src="https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop" alt="Hoa tươi HoaEm Boutique" class="w-full h-[380px] md:h-[480px] object-cover group-hover:scale-105 transition duration-700">
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <?php if (!empty($products)): ?>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
-                    <?php foreach ($products as $p): ?>
-                    <div class="bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group border border-customBeige">
-                        <div class="h-60 bg-customBeige/30 rounded-[1.5rem] overflow-hidden mb-4 relative flex items-center justify-center">
+        <!-- Khu vực 2: Ba thẻ giá trị thương hiệu -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reveal-up" style="transition-delay: 150ms;">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-[24px] border border-earthOrange/20 shadow-sm flex items-start gap-4 hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-earthOrange/10 text-earthOrange rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-warmBrown text-sm mt-1">Tươi thắm mỗi ngày</h4>
+                        <p class="text-xs text-warmGray mt-1.5 leading-relaxed">Luôn chọn những đóa hoa tươi rực rỡ nhất để thắp sáng những ngày bình thường.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-[24px] border border-earthOrange/20 shadow-sm flex items-start gap-4 hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-earthOrange/10 text-earthOrange rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-warmBrown text-sm mt-1">Tỉ mỉ từng chi tiết</h4>
+                        <p class="text-xs text-warmGray mt-1.5 leading-relaxed">Gửi gắm toàn bộ tâm huyết, sự chân thành qua từng dòng code và nét vẽ.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-[24px] border border-earthOrange/20 shadow-sm flex items-start gap-4 hover:shadow-md transition duration-300">
+                    <div class="w-12 h-12 bg-earthOrange/10 text-earthOrange rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-warmBrown text-sm mt-1">Trọn vẹn hoài niệm</h4>
+                        <p class="text-xs text-warmGray mt-1.5 leading-relaxed">Mỗi sản phẩm là một câu chuyện, thay bạn trao đi những cảm xúc chân thành nhất.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Khu vực 3: Top 4 Sản phẩm được quan tâm nhiều nhất -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 reveal-up" style="transition-delay: 300ms;">
+            <div class="text-center mb-10 border-b border-earthOrange/10 pb-6">
+                <span class="text-earthOrange font-semibold text-[10px] tracking-widest uppercase">✦ BỘ SƯU TẬP ✦</span>
+                <h2 class="font-serif text-3xl font-bold text-warmBrown mt-2">Những bó hoa được yêu thích</h2>
+                <p class="text-xs sm:text-sm text-warmGray mt-2">Gửi trao yêu thương bằng những thiết kế hoa tươi dành riêng cho từng khoảnh khắc.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <?php if (!empty($products)): ?>
+                    <?php 
+                    $featuredProducts = array_slice($products, 0, 4); 
+                    foreach ($featuredProducts as $p): 
+                    ?>
+                    <div class="bg-white rounded-[24px] p-4 shadow-sm border border-earthOrange/10 hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group">
+                        <div class="aspect-[4/3] bg-customBeige/50 rounded-[16px] overflow-hidden mb-4 relative">
                             <?php if (!empty($p['image'])): ?>
                                 <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <?php else: ?>
-                                <div class="w-full h-full flex flex-col items-center justify-center text-warmBrown/70 p-4 text-center bg-gradient-to-br from-customBeige/20 to-orange-50">
-                                    <span class="text-3xl mb-1">💐</span>
-                                    <span class="text-xs font-semibold px-2"><?= htmlspecialchars($p['name']) ?></span>
-                                </div>
+                                <div class="w-full h-full flex items-center justify-center text-4xl">💐</div>
                             <?php endif; ?>
-                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-earthOrange text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                Bán chạy
+                            
+                            <!-- Nhãn duy nhất: Được quan tâm nhiều nhất -->
+                            <span class="absolute top-2 left-2 bg-red-500/90 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
+                                Được quan tâm nhiều nhất
                             </span>
                         </div>
                         
                         <div class="flex-grow flex flex-col px-1">
-                            <a href="/product/detail/<?= htmlspecialchars($p['slug']) ?>" class="font-medium text-warmGray hover:text-earthOrange transition line-clamp-2 leading-snug mb-3">
+                            <a href="/product/detail/<?= htmlspecialchars($p['slug'] ?? $p['id']) ?>" class="font-medium text-textMain hover:text-earthOrange transition text-sm mb-1 line-clamp-2 min-h-[40px]">
                                 <?= htmlspecialchars($p['name']) ?>
                             </a>
-                            <div class="text-earthOrange font-bold text-lg mt-auto mb-4">
-                                <?= number_format($p['min_price'], 0, ',', '.') ?> đ
+                            <div class="text-earthOrange font-bold text-base mt-auto mb-3">
+                                <?= number_format($p['min_price'] ?? $p['price'] ?? 0, 0, ',', '.') ?> đ
                             </div>
-                            <a href="/product/detail/<?= htmlspecialchars($p['slug']) ?>" class="block w-full text-center bg-earthOrange hover:bg-warmBrown text-white py-3 rounded-2xl text-sm font-semibold transition shadow-sm">
+                            <a href="/product/detail/<?= htmlspecialchars($p['slug'] ?? $p['id']) ?>" class="block w-full text-center bg-white border border-earthOrange text-earthOrange hover:bg-earthOrange hover:text-white py-2.5 rounded-full text-xs font-semibold transition">
                                 Xem chi tiết
                             </a>
                         </div>
                     </div>
                     <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="text-center py-20 bg-white rounded-[2rem] border border-customBeige">
-                    <p class="text-lg font-medium text-warmGray">Hiện chưa có sản phẩm nào trong danh mục này.</p>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Khu vực “Hoa cho mọi dịp” -->
-        <div class="mb-12">
-            <div class="text-center max-w-xl mx-auto mb-10">
-                <span class="text-earthOrange font-semibold text-sm tracking-wider uppercase">Gợi ý quà tặng</span>
-                <h2 class="font-serif text-3xl font-bold text-warmBrown mt-1">Hoa cho mọi dịp</h2>
-                <p class="text-warmGray text-sm mt-2">Gửi gắm thông điệp chân thành nhất đến những người thương yêu trong từng sự kiện đặc biệt.</p>
+                <?php else: ?>
+                    <div class="col-span-full text-center py-10 bg-white/60 rounded-3xl border border-earthOrange/10">
+                        <p class="text-sm text-warmGray">Hoa đang về tiệm, mời bạn quay lại sau nhé!</p>
+                    </div>
+                <?php endif; ?>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <a href="/product/search?occasion=sinh-nhat" class="group relative h-64 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-                    <div class="absolute inset-0 bg-customBeige/30 group-hover:scale-105 transition duration-500 flex items-center justify-center text-5xl">🎂</div>
-                    <div class="absolute bottom-0 left-0 right-0 p-6 z-20 text-white">
-                        <h3 class="font-serif text-xl font-bold">Hoa sinh nhật</h3>
-                        <p class="text-xs text-gray-200 mt-1 opacity-90">Tươi vui, rực rỡ và đong đầy hạnh phúc</p>
-                    </div>
-                </a>
-                <a href="/product/search?occasion=tinh-yeu" class="group relative h-64 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-                    <div class="absolute inset-0 bg-customBeige/40 group-hover:scale-105 transition duration-500 flex items-center justify-center text-5xl">💖</div>
-                    <div class="absolute bottom-0 left-0 right-0 p-6 z-20 text-white">
-                        <h3 class="font-serif text-xl font-bold">Kỷ niệm & Tình yêu</h3>
-                        <p class="text-xs text-gray-200 mt-1 opacity-90">Lãng mạn, ngọt ngào và sâu lắng</p>
-                    </div>
-                </a>
-                <a href="/product/search?occasion=tang-me" class="group relative h-64 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10"></div>
-                    <div class="absolute inset-0 bg-customBeige/30 group-hover:scale-105 transition duration-500 flex items-center justify-center text-5xl">💐</div>
-                    <div class="absolute bottom-0 left-0 right-0 p-6 z-20 text-white">
-                        <h3 class="font-serif text-xl font-bold">Hoa tặng mẹ</h3>
-                        <p class="text-xs text-gray-200 mt-1 opacity-90">Tri ân sâu sắc, kính yêu và trọn vẹn</p>
-                    </div>
+            
+            <div class="text-center mt-10">
+                <a href="/products" class="inline-flex items-center gap-1 text-sm font-bold text-warmBrown border-b-2 border-earthOrange hover:text-earthOrange transition pb-1">
+                    Xem tất cả sản phẩm &rarr;
                 </a>
             </div>
-        </div>
+        </section>
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('active');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                document.querySelectorAll('.home-main-wrapper .reveal-up').forEach(el => observer.observe(el));
+            });
+        </script>
     </main>
+    <!-- KẾT THÚC: BODY TRANG CHỦ -->
 
-    <!-- Footer chuẩn boutique -->
-    <footer class="bg-white border-t border-customBeige mt-auto relative z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">🌸</span>
-                <div>
-                    <span class="font-serif text-lg font-bold text-warmBrown tracking-tight">hoa&amp;em</span>
-                    <p class="text-xs text-warmGray">Chuyện hoa chuyện mình.</p>
+    <!-- FOOTER -->
+    <footer class="bg-white/90 backdrop-blur-md border-t border-earthOrange/15 relative z-10 mt-auto pt-12 pb-8 text-warmBrown">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-earthOrange/10">
+                <div class="space-y-4">
+                    <a href="/" class="flex items-center gap-2 group inline-block">
+                        <img src="/assets/img/products/logo-moi.png" alt="HoaEm Boutique" class="h-9 w-auto object-contain mix-blend-multiply group-hover:scale-105 transition duration-300">
+                    </a>
+                    <p class="text-xs text-warmGray leading-relaxed">
+                        Tiệm hoa tươi boutique trực tuyến. Mang trọn vẹn yêu thương và hoài niệm qua từng cánh hoa rực rỡ nhất.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <h4 class="font-serif font-bold text-sm uppercase tracking-wider text-warmBrown">Khám phá</h4>
+                    <ul class="space-y-2 text-xs text-warmGray">
+                        <li><a href="/products" class="hover:text-earthOrange transition">Tất cả sản phẩm hoa</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-3">
+                    <h4 class="font-serif font-bold text-sm uppercase tracking-wider text-warmBrown">Về chúng tôi</h4>
+                    <ul class="space-y-2 text-xs text-warmGray">
+                        <li><a href="/about" class="hover:text-earthOrange transition">Câu chuyện của chúng mình</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-3">
+                    <h4 class="font-serif font-bold text-sm uppercase tracking-wider text-warmBrown">Chính sách</h4>
+                    <ul class="space-y-2 text-xs text-warmGray">
+                        <li><a href="/contact" class="hover:text-earthOrange transition">Liên hệ</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="text-warmGray text-xs font-medium">
-                &copy; <?= date('Y') ?> hoa&amp;em boutique. All rights reserved.
+            <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-warmGray">
+                <div>
+                    &copy; <?= date('Y') ?> HoaEm Boutique. All rights reserved.
+                </div>
             </div>
         </div>
     </footer>
