@@ -1,208 +1,160 @@
-<?php
-$cartItems = isset($cart) ? $cart : [];
-$subtotal = 0;
-foreach ($cartItems as $item) {
-    $subtotal += $item['price'] * $item['quantity'];
-}
-$discount = isset($_SESSION['voucher']['discount']) ? $_SESSION['voucher']['discount'] : 0;
-$total = max(0, $subtotal - $discount);
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Giỏ hàng của bạn - hoa&amp;em</title>
+    <title><?= htmlspecialchars($title ?? 'Giỏ hàng - hoa&em') ?></title>
     
-    <!-- Google Fonts: Be Vietnam Pro & Playfair Display -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-    
-    <!-- Nhúng Tailwind CSS qua CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Cấu hình bảng màu Cam đất ấm áp -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
-                        serif: ['"Playfair Display"', 'serif'],
-                    },
-                    colors: {
-                        earthOrange: '#C96F4E', 
-                        earthHover: '#b55f3e',  
-                        warmBrown: '#8B5E3C',   
-                        customBeige: '#F3E7D9', 
-                        warmGray: '#686B6B',    
-                        textMain: '#382A32',    
-                    }
+                    fontFamily: { sans: ['"Be Vietnam Pro"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
+                    colors: { earthOrange: '#C96F4E', earthHover: '#b55f3e', warmBrown: '#8B5E3C', customBeige: '#F3E7D9', warmGray: '#686B6B', textMain: '#382A32' }
                 }
             }
         }
     </script>
-    <style>
-        body { 
-            color: #382A32; 
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background: url('/assets/img/bg-floral.png') no-repeat center center fixed;
-            background-size: cover;
-            background-color: #FDF7F2; 
-        }
-    </style>
+    <style> body { color: #382A32; font-family: 'Be Vietnam Pro', sans-serif; background-color: #FDF7F2; } </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-earthOrange selection:text-white relative overflow-x-hidden">
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-earthOrange selection:text-white">
 
-    <!-- Header tích hợp Avatar thông minh -->
-    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-customBeige transition-all">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 group">
-                <span class="text-2xl">🌸</span>
-                <span class="font-serif text-2xl font-bold text-warmBrown tracking-tight group-hover:opacity-90 transition">hoa&amp;em</span>
-            </a>
-            
-            <nav class="flex items-center gap-4 sm:gap-6 text-sm sm:text-base font-medium">
-                <a href="/" class="text-warmGray hover:text-earthOrange transition flex items-center gap-1">
-                    ← Tiếp tục mua sắm
-                </a>
-                
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <div class="flex items-center gap-3 pl-2 border-l border-customBeige">
-                        <a href="/account/orders" class="flex items-center gap-2 group">
-                            <?php if (!empty($_SESSION['avatar'])): ?>
-                                <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-earthOrange/40 group-hover:scale-105 transition">
-                            <?php else: ?>
-                                <div class="w-9 h-9 rounded-full bg-earthOrange text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:bg-earthHover transition">
-                                    <?= mb_strtoupper(mb_substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
-                                </div>
-                            <?php endif; ?>
-                            <span class="hidden md:inline font-semibold text-warmBrown group-hover:text-earthOrange transition">
-                                <?= htmlspecialchars($_SESSION['username'] ?? 'Tài khoản') ?>
-                            </span>
-                        </a>
-
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="/admin/orders" class="text-amber-600 hover:text-amber-700 transition font-semibold text-xs bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">Quản trị</a>
-                        <?php endif; ?>
-
-                        <a href="/auth/logout" class="text-red-500 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition" title="Đăng xuất">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        </a>
-                    </div>
-                <?php endif; ?>
-            </nav>
-        </div>
+    <!-- Header đơn giản -->
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-customBeige py-4 px-6 md:px-10 flex justify-between items-center sticky top-0 z-30 shadow-sm">
+        <a href="/" class="flex items-center gap-3 group cursor-pointer text-decoration-none">
+            <span class="text-3xl transition group-hover:scale-110">🌸</span>
+            <div>
+                <span class="font-serif text-2xl font-bold text-warmBrown tracking-tight group-hover:text-earthOrange transition">hoa&amp;em</span>
+                <span class="block text-[10px] font-bold text-earthOrange uppercase tracking-widest">Tiệm Hoa Tươi</span>
+            </div>
+        </a>
+        <a href="/products" class="text-xs font-bold text-warmBrown hover:text-earthOrange transition flex items-center gap-1">← Tiếp tục mua sắm</a>
     </header>
 
-    <!-- Nội dung Giỏ hàng -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full relative z-10">
-        
-        <div class="text-center max-w-xl mx-auto mb-10">
-            <span class="text-earthOrange font-semibold text-sm tracking-wider uppercase">Túi quà yêu thương</span>
-            <h1 class="font-serif text-3xl font-bold text-warmBrown mt-1">Giỏ hàng của bạn</h1>
-            <span class="block text-xs text-earthOrange mt-1 tracking-widest">✦ ── ✦ ── ✦</span>
-        </div>
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        <h1 class="font-serif text-3xl font-bold text-warmBrown mb-8">Giỏ hàng của bạn</h1>
 
-        <?php if (!empty($cartItems)): ?>
+        <?php if (empty($cart)): ?>
+            <!-- Trạng thái giỏ hàng trống -->
+            <div class="bg-white rounded-[2.5rem] p-12 text-center border border-customBeige shadow-sm max-w-2xl mx-auto space-y-6">
+                <span class="text-6xl">🛒</span>
+                <h2 class="font-serif text-2xl font-bold text-warmBrown">Giỏ hàng đang trống</h2>
+                <p class="text-warmGray text-sm">Bạn chưa có sản phẩm nào trong giỏ hàng. Hãy khám phá các tuyệt tác hoa tươi của tiệm nhé!</p>
+                <!-- Đã sửa nút khám phá chuyển hướng sang /products -->
+                <a href="/products" class="inline-block px-8 py-3.5 bg-earthOrange hover:bg-earthHover text-white rounded-2xl font-bold text-sm transition shadow-md shadow-earthOrange/20">
+                    Khám phá sản phẩm ngay 🌸
+                </a>
+            </div>
+        <?php else: ?>
+            <!-- Trạng thái giỏ hàng có sản phẩm -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
+                <!-- Danh sách sản phẩm trong giỏ -->
                 <div class="lg:col-span-2 space-y-4">
-                    <form action="/cart/update" method="POST">
-                        <div class="space-y-4">
-                            <?php foreach ($cartItems as $id => $item): ?>
-                            <div class="bg-white/95 backdrop-blur-md rounded-[2rem] p-5 shadow-sm border border-customBeige flex flex-col sm:flex-row items-center gap-5">
-                                <div class="w-24 h-24 rounded-2xl bg-customBeige/30 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                    <?php if (!empty($item['image'])): ?>
-                                        <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="w-full h-full object-cover">
-                                    <?php else: ?>
-                                        <span class="text-2xl">💐</span>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <div class="flex-grow text-center sm:text-left">
-                                    <h3 class="font-semibold text-warmBrown text-base line-clamp-1"><?= htmlspecialchars($item['name']) ?></h3>
-                                    <div class="text-earthOrange font-bold text-base mt-1">
-                                        <?= number_format($item['price'], 0, ',', '.') ?> đ
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-2">
-                                    <input type="number" name="quantity[<?= $id ?>]" value="<?= $item['quantity'] ?>" min="1" 
-                                           class="w-16 text-center py-2 bg-customBeige/20 rounded-xl border border-customBeige font-semibold text-textMain text-sm focus:outline-none focus:border-earthOrange">
-                                </div>
-
-                                <div class="text-right font-bold text-warmBrown min-w-[100px]">
-                                    <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?> đ
-                                </div>
-
-                                <a href="/cart/remove/<?= $id ?>" class="text-gray-400 hover:text-red-500 transition p-2" title="Xóa sản phẩm">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2.002 2.002 0 0116.138 21H7.862a2.002 2.002 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </a>
+                    <?php foreach ($cart as $key => $item): ?>
+                        <div class="bg-white rounded-3xl p-5 border border-customBeige shadow-xs flex flex-col sm:flex-row items-center gap-5">
+                            <!-- Ảnh sản phẩm -->
+                            <div class="w-24 h-24 rounded-2xl overflow-hidden bg-customBeige/30 border border-customBeige flex-shrink-0">
+                                <img src="<?= htmlspecialchars($item['image'] ?? '/assets/img/default.jpg') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="w-full h-full object-cover">
                             </div>
-                            <?php endforeach; ?>
-                        </div>
 
-                        <div class="mt-4 flex justify-between items-center">
-                            <a href="/cart/clear" class="text-sm font-semibold text-red-500 hover:underline px-2">Xóa tất cả giỏ hàng</a>
-                            <button type="submit" class="bg-customBeige/60 hover:bg-customBeige text-warmBrown px-6 py-2.5 rounded-full text-sm font-semibold transition border border-customBeige">
-                                Cập nhật giỏ hàng
-                            </button>
+                            <!-- Thông tin sản phẩm & Phân loại -->
+                            <div class="flex-grow text-center sm:text-left">
+                                <h3 class="font-serif font-bold text-lg text-warmBrown"><?= htmlspecialchars($item['name']) ?></h3>
+                                
+                                <!-- Hiển thị phân loại Size - Kiểu chậu/Màu sắc -->
+                                <div class="inline-block bg-customBeige/30 px-3 py-1 rounded-xl text-xs font-semibold text-earthOrange my-1.5 border border-customBeige/50">
+                                    Phân loại: <?= htmlspecialchars($item['size']) ?><?php if (!empty($item['color']) && $item['color'] !== 'Mặc định'): ?> - <?= htmlspecialchars($item['color']) ?><?php endif; ?>
+                                </div>
+
+                                <div class="text-xs text-warmGray">Đơn giá: <b class="text-textMain"><?= number_format($item['price'], 0, ',', '.') ?> đ</b></div>
+                            </div>
+
+                            <!-- Tăng giảm số lượng -->
+                            <div class="flex items-center gap-3">
+                                <form action="/cart/update" method="POST" class="flex items-center bg-customBeige/20 border border-customBeige rounded-xl overflow-hidden">
+                                    <input type="hidden" name="cart_key" value="<?= $key ?>">
+                                    <button type="submit" name="action" value="decrease" class="w-8 h-9 text-warmBrown font-bold hover:bg-customBeige transition">-</button>
+                                    <input type="text" value="<?= $item['quantity'] ?>" readonly class="w-10 text-center text-xs font-bold text-textMain bg-transparent">
+                                    <button type="submit" name="action" value="increase" class="w-8 h-9 text-warmBrown font-bold hover:bg-customBeige transition">+</button>
+                                </form>
+                            </div>
+
+                            <!-- Thành tiền & Nút xóa -->
+                            <div class="text-right flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-customBeige">
+                                <span class="font-bold text-earthOrange text-base"><?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?> đ</span>
+                                <a href="/cart/remove/<?= $key ?>" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')" class="text-xs text-red-500 hover:text-red-700 font-semibold mt-1">Xóa</a>
+                            </div>
                         </div>
-                    </form>
+                    <?php endforeach; ?>
+
+                    <!-- Nút Tiếp tục mua sắm ở dưới danh sách -->
+                    <div class="pt-2">
+                        <a href="/products" class="inline-flex items-center gap-2 px-6 py-3 bg-customBeige/40 hover:bg-customBeige text-warmBrown rounded-2xl text-xs font-bold transition border border-customBeige">
+                            <span>←</span> Tiếp tục mua sắm
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border border-customBeige space-y-6">
-                    <h2 class="font-serif text-xl font-bold text-warmBrown border-b border-customBeige pb-4">Cộng giỏ hàng</h2>
-                    
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between text-warmGray">
-                            <span>Tạm tính</span>
-                            <span class="font-semibold text-textMain"><?= number_format($subtotal, 0, ',', '.') ?> đ</span>
-                        </div>
-                        <?php if ($discount > 0): ?>
-                        <div class="flex justify-between text-earthOrange">
-                            <span>Giảm giá (Voucher)</span>
-                            <span class="font-semibold">-<?= number_format($discount, 0, ',', '.') ?> đ</span>
-                        </div>
+                <!-- Tổng tiền & Mã giảm giá -->
+                <div class="bg-white rounded-3xl p-6 border border-customBeige shadow-sm space-y-6 sticky top-24">
+                    <h2 class="font-serif text-xl font-bold text-warmBrown border-b border-customBeige pb-3">Tóm tắt đơn hàng</h2>
+
+                    <!-- Form nhập mã giảm giá -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-warmGray uppercase tracking-wider">Mã giảm giá</label>
+                        <?php if (isset($_SESSION['voucher'])): ?>
+                            <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-2xl text-xs">
+                                <div>
+                                    <span class="font-bold text-green-700">Mã: <?= htmlspecialchars($_SESSION['voucher']['code']) ?></span>
+                                    <span class="block text-[10px] text-green-600">Đã áp dụng thành công</span>
+                                </div>
+                                <a href="/cart/remove-voucher" class="text-red-500 font-bold hover:underline">Hủy</a>
+                            </div>
+                        <?php else: ?>
+                            <form action="/cart/apply-voucher" method="POST" class="flex gap-2">
+                                <input type="text" name="voucher_code" placeholder="Nhập mã voucher..." required class="w-full px-4 py-2.5 bg-customBeige/20 border border-customBeige rounded-xl text-xs font-medium text-textMain focus:outline-none focus:ring-1 focus:ring-earthOrange">
+                                <button type="submit" class="px-4 py-2.5 bg-warmBrown hover:bg-earthOrange text-white rounded-xl text-xs font-bold transition flex-shrink-0">Áp dụng</button>
+                            </form>
                         <?php endif; ?>
-                        <div class="flex justify-between text-base font-bold text-warmBrown pt-3 border-t border-customBeige">
-                            <span>Tổng cộng</span>
-                            <span class="text-earthOrange text-lg"><?= number_format($total, 0, ',', '.') ?> đ</span>
+                    </div>
+
+                    <!-- Chi tiết thanh toán -->
+                    <div class="space-y-3 text-sm border-t border-customBeige pt-4">
+                        <div class="flex justify-between text-warmGray">
+                            <span>Tạm tính:</span>
+                            <span class="font-bold text-textMain"><?= number_format($subTotal, 0, ',', '.') ?> đ</span>
+                        </div>
+                        <?php if ($discountTotal > 0): ?>
+                            <div class="flex justify-between text-green-600 font-medium">
+                                <span>Giảm giá:</span>
+                                <span>-<?= number_format($discountTotal, 0, ',', '.') ?> đ</span>
+                            </div>
+                        <?php endif; ?>
+                        <div class="flex justify-between text-base font-bold text-warmBrown border-t border-customBeige pt-3">
+                            <span>Tổng cộng:</span>
+                            <span class="text-earthOrange text-xl"><?= number_format($finalTotal, 0, ',', '.') ?> đ</span>
                         </div>
                     </div>
 
-                    <form action="/cart/applyVoucher" method="POST" class="flex gap-2 pt-2">
-                        <input type="text" name="voucher_code" placeholder="Mã giảm giá..." 
-                               class="flex-grow px-4 py-2.5 bg-customBeige/20 rounded-xl border border-customBeige text-sm font-medium focus:outline-none focus:border-earthOrange">
-                        <button type="submit" class="bg-warmBrown hover:bg-earthBrown text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition">
-                            Áp dụng
-                        </button>
-                    </form>
-
-                    <a href="/cart/checkout" class="block w-full text-center bg-earthOrange hover:bg-earthHover text-white py-4 rounded-2xl font-bold text-base transition shadow-md shadow-earthOrange/20">
-                        Tiến hành thanh toán
+                    <!-- Nút thanh toán -->
+                    <a href="/cart/checkout" class="w-full py-4 bg-earthOrange hover:bg-earthHover text-white rounded-2xl font-bold text-sm transition shadow-lg shadow-earthOrange/20 flex items-center justify-center gap-2 text-center block">
+                        <span>Tiến hành thanh toán ➔</span>
                     </a>
                 </div>
 
             </div>
-        <?php else: ?>
-            <div class="text-center py-20 bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-customBeige max-w-xl mx-auto shadow-sm">
-                <span class="text-5xl mb-3 block">🛒</span>
-                <p class="text-lg font-semibold text-warmGray mb-6">Giỏ hàng của bạn đang trống.</p>
-                <a href="/" class="bg-earthOrange hover:bg-earthHover text-white px-8 py-3.5 rounded-full font-bold text-sm transition shadow-sm">
-                    Khám phá bộ sưu tập hoa
-                </a>
-            </div>
         <?php endif; ?>
-
     </main>
 
     <!-- Footer -->
-    <footer class="w-full py-6 text-center text-warmGray/70 text-xs font-semibold z-10 border-t border-customBeige bg-white/50">
+    <footer class="w-full py-6 text-center text-warmGray/70 text-xs font-semibold z-10 border-t border-customBeige bg-white/50 mt-12">
         &copy; <?= date('Y') ?> hoa&amp;em. Tất cả quyền được bảo lưu.
     </footer>
-
 </body>
 </html>

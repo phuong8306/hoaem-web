@@ -51,49 +51,7 @@
 </head>
 <body class="antialiased min-h-screen flex flex-col selection:bg-earthOrange selection:text-white">
 
-    <!-- HEADER: ĐÃ HOÀN THIỆN NÚT QUẢN TRỊ VÀ NÚT ĐĂNG XUẤT CHUẨN MẪU -->
-    <header class="sticky top-0 w-full bg-[#FAF4EF]/95 backdrop-blur-md z-50 border-b border-earthOrange/10 shadow-sm py-3">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 group py-1">
-                <img src="/assets/img/products/logo-moi.png" alt="Shop hoa tươi HoaEm" class="h-9 sm:h-10 w-auto object-contain mix-blend-multiply group-hover:scale-105 transition duration-300">
-            </a>
-            
-            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-warmBrown">
-                <a href="/" class="<?= ($_SERVER['REQUEST_URI'] === '/' || $_SERVER['REQUEST_URI'] === '/index.php') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Trang chủ</a>
-                <a href="/products" class="<?= str_contains($_SERVER['REQUEST_URI'], '/products') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Sản phẩm</a>
-                <a href="/about" class="<?= str_contains($_SERVER['REQUEST_URI'], '/about') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Giới thiệu</a>
-                <a href="/contact" class="<?= str_contains($_SERVER['REQUEST_URI'], '/contact') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Liên hệ</a>
-            </nav>
-
-            <div class="flex items-center gap-4">
-                <a href="/cart" class="text-warmBrown hover:text-earthOrange relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span class="absolute -top-2 -right-2 bg-earthOrange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
-                </a>
-
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <div class="flex items-center gap-2">
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="/admin" class="px-4 py-2 bg-earthOrange text-white rounded-full text-xs font-semibold hover:bg-earthHover transition shadow-sm">Trang quản lý</a>
-                        <?php else: ?>
-                            <a href="/account" class="px-4 py-2 border border-earthOrange text-earthOrange rounded-full text-xs font-semibold hover:bg-earthOrange hover:text-white transition">Tài khoản</a>
-                        <?php endif; ?>
-
-                        <!-- Nút Đăng xuất chuẩn mẫu thiết kế mới -->
-                        <a href="/auth/logout" class="px-4 py-2 bg-customBeige border border-earthOrange/20 hover:border-earthOrange text-warmBrown rounded-full text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
-                            <span>Đăng xuất</span>
-                            <span class="text-earthOrange font-bold">&rarr;</span>
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <div class="hidden sm:flex items-center gap-3 border-l border-earthOrange/20 pl-4">
-                        <a href="/auth/login" class="text-warmBrown hover:text-earthOrange text-sm font-semibold transition">Đăng nhập</a>
-                        <a href="/auth/register" class="px-5 py-2 bg-[#C86D53] text-white rounded-full text-sm font-semibold hover:bg-earthHover transition shadow-sm">Đăng ký</a>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </header>
+    
 
     <!-- BẮT ĐẦU PHẦN BODY TRANG LIÊN HỆ -->
     <main class="flex-grow w-full relative z-10 contact-body-wrapper pb-10">
@@ -239,11 +197,7 @@
             });
         </script>
     </main>
-    <!-- KẾT THÚC PHẦN BODY TRANG LIÊN HỆ -->
-
-    <footer class="bg-white border-t border-customBeige py-6 text-center text-warmGray text-xs mt-auto">
-        &copy; <?= date('Y') ?> HoaEm Boutique. All rights reserved.
-    </footer>
+    
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {

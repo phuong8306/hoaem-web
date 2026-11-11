@@ -5,7 +5,6 @@ require_once __DIR__ . '/../models/OccasionModel.php';
 
 class ProductController {
     
-    // Trang danh sách sản phẩm chính (Dùng nếu route /products trỏ vào đây)
     public function index() {
         $productModel = new ProductModel();
         $occasionModel = new OccasionModel();
@@ -16,15 +15,10 @@ class ProductController {
         $categoryId = isset($_GET['category_id']) ? (int)$_GET['category_id'] : null;
 
         if ($categoryId) {
-            $products = $productModel->getProductsByCategoryId($categoryId);
+            $products = method_exists($productModel, 'getProductsByCategoryId') ? $productModel->getProductsByCategoryId($categoryId) : $productModel->getPaginatedProducts(10, 0, $categoryId);
             $message = 'Danh mục sản phẩm';
         } else {
-            // Sắp xếp mới nhất đến cũ nhất
-            if (method_exists($productModel, 'getAllProductsSortedByNewest')) {
-                $products = $productModel->getAllProductsSortedByNewest();
-            } else {
-                $products = $productModel->getAllProductsForHome();
-            }
+            $products = $productModel->getAllProductsForHome();
             $message = 'Danh sách sản phẩm hoa tươi mới nhất';
         }
 
@@ -56,6 +50,18 @@ class ProductController {
 
         $variants = $productModel->getVariantsByProductId($product['id']);
 
+        // Tính khoảng giá min - max từ các phiên bản
+        $minPrice = 0;
+        $maxPrice = 0;
+        if (!empty($variants)) {
+            $prices = array_column($variants, 'price');
+            $minPrice = min($prices);
+            $maxPrice = max($prices);
+        } else {
+            $minPrice = $product['price'] ?? 0;
+            $maxPrice = $minPrice;
+        }
+
         $reviewModel = new ReviewModel();
         $reviews = $reviewModel->getReviewsByProductId($product['id']);
 
@@ -63,6 +69,8 @@ class ProductController {
             'title' => $product['name'],
             'product' => $product,
             'variants' => $variants,
+            'minPrice' => $minPrice,
+            'maxPrice' => $maxPrice,
             'reviews' => $reviews
         ];
 
@@ -113,7 +121,6 @@ class ProductController {
             'occasions' => $occasions
         ];
 
-        // ĐÃ SỬA: Render về đúng product/list để giữ giao diện trang sản phẩm chuẩn xác
         View::render('product/list', $data);
     }
 }

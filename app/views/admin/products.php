@@ -203,7 +203,12 @@ $products = isset($products) ? $products : [];
                                                 <span class="px-3 py-1 rounded-xl text-xs font-bold border bg-red-50 text-red-700 border-red-200">Đang ẩn</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="py-4 px-6 text-center">
+                                        <td class="py-4 px-6 text-center space-x-2">
+                                            <!-- Nút Sửa sản phẩm -->
+                                            <a href="/admin/editProduct/<?= $p['id'] ?>" class="inline-flex items-center justify-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition shadow-xs">
+                                                Sửa
+                                            </a>
+                                            <!-- Nút Xóa sản phẩm -->
                                             <a href="/admin/deleteProduct/<?= $p['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')" class="inline-flex items-center justify-center px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition shadow-xs">
                                                 Xóa
                                             </a>

@@ -12,7 +12,7 @@ class OrderModel extends Database {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Tạo đơn hàng mới từ giỏ hàng
+    // Tạo đơn hàng mới từ giỏ hàng (Có kèm trừ tồn kho an toàn tuyệt đối)
     public function createOrder($userId, $fullname, $phone, $address, $paymentMethod, $totalPrice, $cartItems) {
         try {
             $this->pdo->beginTransaction();
@@ -24,21 +24,27 @@ class OrderModel extends Database {
             $stmtOrder->execute([$userId, $fullname, $phone, $address, $paymentMethod, $totalPrice]);
             $orderId = $this->pdo->lastInsertId();
 
-            // 2. Thêm chi tiết đơn hàng vào bảng order_items và trừ tồn kho
+            // 2. Thêm chi tiết đơn hàng vào bảng order_items và trừ tồn kho từng phiên bản
             foreach ($cartItems as $item) {
+                $productId = $item['product_id'];
                 $variantId = $item['variant_id'];
                 $quantity = $item['quantity'];
                 $price = $item['price'];
 
-                // Thêm vào order_items
-                $sqlItem = "INSERT INTO order_items (order_id, variant_id, quantity, price) VALUES (?, ?, ?, ?)";
+                // Thêm vào order_items (đã có đầy đủ product_id và variant_id)
+                $sqlItem = "INSERT INTO order_items (order_id, product_id, variant_id, quantity, price) VALUES (?, ?, ?, ?, ?)";
                 $stmtItem = $this->pdo->prepare($sqlItem);
-                $stmtItem->execute([$orderId, $variantId, $quantity, $price]);
+                $stmtItem->execute([$orderId, $productId, $variantId, $quantity, $price]);
 
-                // Trừ số lượng tồn kho của biến thể sản phẩm
+                // Trừ số lượng tồn kho của biến thể sản phẩm (kiểm tra điều kiện an toàn kho >= số lượng mua)
                 $sqlStock = "UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE id = ? AND stock_quantity >= ?";
                 $stmtStock = $this->pdo->prepare($sqlStock);
                 $stmtStock->execute([$quantity, $variantId, $quantity]);
+                
+                // Nếu kho không đủ, báo lỗi để kích hoạt Rollback toàn bộ giao dịch
+                if ($stmtStock->rowCount() === 0) {
+                    throw new Exception("Sản phẩm không đủ số lượng tồn kho cho phiên bản này!");
+                }
             }
 
             $this->pdo->commit();
@@ -51,11 +57,9 @@ class OrderModel extends Database {
 
     public function getAnalyticsSummary() {
         try {
-            // Tổng doanh thu từ các đơn hàng hoàn thành hoặc đã giao
             $stmt = $this->pdo->query("SELECT SUM(total_price) as total_revenue, COUNT(*) as total_orders FROM orders");
             $data = $stmt->fetch();
 
-            // Tổng số khách hàng
             $stmtUser = $this->pdo->query("SELECT COUNT(*) as total_customers FROM users");
             $userData = $stmtUser->fetch();
 
@@ -83,7 +87,7 @@ class OrderModel extends Database {
                     ORDER BY total_sold DESC 
                     LIMIT 5";
             $stmt = $this->pdo->query($sql);
-            return $stmt->fetchAll();
+            $stmt->fetchAll();
         } catch (PDOException $e) {
             return [];
         }
@@ -105,6 +109,7 @@ class OrderModel extends Database {
         $stmt->execute([$orderId]);
         return $stmt->fetchAll();
     }
+
     // Cập nhật trạng thái đơn hàng cho Admin
     public function updateOrderStatus($orderId, $status) {
         try {

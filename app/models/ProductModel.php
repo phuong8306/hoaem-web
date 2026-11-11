@@ -1,25 +1,50 @@
 <?php
 class ProductModel extends Database {
 
-    // Lấy danh sách sản phẩm hiển thị trên trang chủ
-public function getAllProductsForHome() {
+    public function getAllProductsForHome() {
         $sql = "SELECT p.id, p.name, p.slug, p.image, p.description, 
-                       COALESCE(v.price, 0) AS min_price, 
-                       v.stock_quantity, c.name AS category_name 
+                       MIN(v.price) AS min_price, 
+                       MAX(v.price) AS max_price, 
+                       SUM(v.stock_quantity) AS stock_quantity, 
+                       c.name AS category_name,
+                       COALESCE(AVG(r.rating), 5) AS avg_rating,
+                       COUNT(r.id) AS total_reviews
                 FROM products p 
-                LEFT JOIN product_variants v ON p.id = v.product_id AND v.is_default = 1
+                LEFT JOIN product_variants v ON p.id = v.product_id 
                 LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN reviews r ON p.id = r.product_id
                 WHERE p.status = 'active'
+                GROUP BY p.id, p.name, p.slug, p.image, p.description, c.name
                 ORDER BY p.id DESC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Lấy toàn bộ danh mục sản phẩm
     public function getCategories() {
         $stmt = $this->pdo->prepare("SELECT * FROM categories");
         $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Bổ sung hàm lấy sản phẩm theo danh mục để fix lỗi HomeController dòng 57
+    public function getProductsByCategoryId($categoryId) {
+        $sql = "SELECT p.id, p.name, p.slug, p.image, p.description, 
+                       MIN(v.price) AS min_price, 
+                       MAX(v.price) AS max_price, 
+                       SUM(v.stock_quantity) AS stock_quantity, 
+                       c.name AS category_name,
+                       COALESCE(AVG(r.rating), 5) AS avg_rating,
+                       COUNT(r.id) AS total_reviews
+                FROM products p 
+                LEFT JOIN product_variants v ON p.id = v.product_id 
+                LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN reviews r ON p.id = r.product_id
+                WHERE p.status = 'active' AND p.category_id = ?
+                GROUP BY p.id, p.name, p.slug, p.image, p.description, c.name
+                ORDER BY p.id DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$categoryId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -33,33 +58,49 @@ public function getAllProductsForHome() {
         return $stmt->fetchAll();
     }
 
-    // Lấy sản phẩm có phân trang và hỗ trợ lọc theo danh mục
     public function getPaginatedProducts($limit, $offset, $categoryId = null) {
         if ($categoryId) {
-            $sql = "SELECT p.id, p.name, p.slug, v.price, v.stock_quantity 
+            $sql = "SELECT p.id, p.name, p.slug, p.image, p.description, 
+                            MIN(v.price) AS min_price, 
+                            MAX(v.price) AS max_price, 
+                            SUM(v.stock_quantity) AS stock_quantity, 
+                            c.name AS category_name,
+                            COALESCE(AVG(r.rating), 5) AS avg_rating,
+                            COUNT(r.id) AS total_reviews
                     FROM products p 
-                    LEFT JOIN product_variants v ON p.id = v.product_id AND v.is_default = 1
+                    LEFT JOIN product_variants v ON p.id = v.product_id 
+                    LEFT JOIN categories c ON p.category_id = c.id
+                    LEFT JOIN reviews r ON p.id = r.product_id
                     WHERE p.status = 'active' AND p.category_id = ?
+                    GROUP BY p.id, p.name, p.slug, p.image, p.description, c.name
                     LIMIT ? OFFSET ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(1, $categoryId, PDO::PARAM_INT);
             $stmt->bindValue(2, $limit, PDO::PARAM_INT);
             $stmt->bindValue(3, $offset, PDO::PARAM_INT);
         } else {
-            $sql = "SELECT p.id, p.name, p.slug, v.price, v.stock_quantity 
+            $sql = "SELECT p.id, p.name, p.slug, p.image, p.description, 
+                            MIN(v.price) AS min_price, 
+                            MAX(v.price) AS max_price, 
+                            SUM(v.stock_quantity) AS stock_quantity, 
+                            c.name AS category_name,
+                            COALESCE(AVG(r.rating), 5) AS avg_rating,
+                            COUNT(r.id) AS total_reviews
                     FROM products p 
-                    LEFT JOIN product_variants v ON p.id = v.product_id AND v.is_default = 1
+                    LEFT JOIN product_variants v ON p.id = v.product_id 
+                    LEFT JOIN categories c ON p.category_id = c.id
+                    LEFT JOIN reviews r ON p.id = r.product_id
                     WHERE p.status = 'active'
+                    GROUP BY p.id, p.name, p.slug, p.image, p.description, c.name
                     LIMIT ? OFFSET ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(1, $limit, PDO::PARAM_INT);
             $stmt->bindValue(2, $offset, PDO::PARAM_INT);
         }
         $stmt->execute();
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Đếm tổng số sản phẩm active (có tính điều kiện danh mục)
     public function getTotalActiveProducts($categoryId = null) {
         if ($categoryId) {
             $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM products WHERE status = 'active' AND category_id = ?");
@@ -76,10 +117,23 @@ public function getAllProductsForHome() {
         return $stmt->fetch();
     }
 
+    public function getProductById($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM products WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Tự động lấy ảnh chính làm fallback từ DB nếu variant chưa có ảnh riêng
     public function getVariantsByProductId($productId) {
-        $stmt = $this->pdo->prepare("SELECT * FROM product_variants WHERE product_id = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT v.*, 
+                   COALESCE(NULLIF(v.image, ''), p.image) AS image 
+            FROM product_variants v 
+            JOIN products p ON v.product_id = p.id 
+            WHERE v.product_id = ?
+        ");
         $stmt->execute([$productId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getVariantDetails($variantId) {
@@ -93,13 +147,22 @@ public function getAllProductsForHome() {
     }
 
     public function searchProducts($keyword) {
-        $sql = "SELECT p.id, p.name, p.slug, v.price, v.stock_quantity 
+        $sql = "SELECT p.id, p.name, p.slug, p.image, p.description, 
+                       MIN(v.price) AS min_price, 
+                       MAX(v.price) AS max_price, 
+                       SUM(v.stock_quantity) AS stock_quantity, 
+                       c.name AS category_name,
+                       COALESCE(AVG(r.rating), 5) AS avg_rating,
+                       COUNT(r.id) AS total_reviews
                 FROM products p 
-                LEFT JOIN product_variants v ON p.id = v.product_id AND v.is_default = 1
-                WHERE p.status = 'active' AND p.name LIKE ?";
+                LEFT JOIN product_variants v ON p.id = v.product_id 
+                LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN reviews r ON p.id = r.product_id
+                WHERE p.status = 'active' AND p.name LIKE ?
+                GROUP BY p.id, p.name, p.slug, p.image, p.description, c.name";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['%' . $keyword . '%']);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getAllProductsForAdmin() {
@@ -117,30 +180,27 @@ public function getAllProductsForHome() {
         return $stmt->execute([$id]);
     }
 
-    // 1. Thêm tham số $imagePath vào cuối cùng
     public function addProduct($categoryId, $name, $slug, $description, $price, $stock, $size, $color, $sku, $imagePath) {
         try {
             $this->pdo->beginTransaction();
             
-            // 👉 Đổi 'image_url' thành 'image' cho khớp với CSDL của ní
             $stmt = $this->pdo->prepare("INSERT INTO products (category_id, name, slug, description, image) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$categoryId, $name, $slug, $description, $imagePath]);
             
             $productId = $this->pdo->lastInsertId();
 
-            $stmtVar = $this->pdo->prepare("INSERT INTO product_variants (product_id, sku, size, color, price, stock_quantity, is_default) VALUES (?, ?, ?, ?, ?, ?, 1)");
-            $stmtVar->execute([$productId, $sku, $size, $color, $price, $stock]);
+            $stmtVar = $this->pdo->prepare("INSERT INTO product_variants (product_id, sku, size, color, price, stock_quantity, is_default, image) VALUES (?, ?, ?, ?, ?, ?, 1, ?)");
+            $stmtVar->execute([$productId, $sku, $size, $color, $price, $stock, $imagePath]);
             
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
-        $this->pdo->rollBack();
-        // Bắt buộc in lỗi SQL màu đỏ ra để mình nhìn thấy
-        echo "<pre style='background: black; color: #00ff00; padding: 15px; font-size: 16px;'>";
-        print_r($e->getMessage());
-        echo "</pre>";
-        exit; // Dừng chương trình lại ngay lập tức tại đây
-    }
+            $this->pdo->rollBack();
+            echo "<pre style='background: black; color: #00ff00; padding: 15px; font-size: 16px;'>";
+            print_r($e->getMessage());
+            echo "</pre>";
+            exit;
+        }
     }
 
     public function getAllVariantsForInventory() {

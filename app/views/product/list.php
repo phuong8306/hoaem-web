@@ -58,50 +58,6 @@ $occasions = isset($occasions) ? $occasions : [];
 </head>
 <body class="antialiased min-h-screen flex flex-col selection:bg-earthOrange selection:text-white">
 
-    <!-- HEADER: ĐÃ HOÀN THIỆN NÚT QUẢN TRỊ VÀ NÚT ĐĂNG XUẤT CHUẨN MẪU -->
-    <header class="sticky top-0 w-full bg-[#FAF4EF]/95 backdrop-blur-md z-50 border-b border-earthOrange/10 shadow-sm py-3">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 group py-1">
-                <img src="/assets/img/products/logo-moi.png" alt="Shop hoa tươi HoaEm" class="h-9 sm:h-10 w-auto object-contain mix-blend-multiply group-hover:scale-105 transition duration-300">
-            </a>
-            
-            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-warmBrown">
-                <a href="/" class="<?= ($_SERVER['REQUEST_URI'] === '/' || $_SERVER['REQUEST_URI'] === '/index.php') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Trang chủ</a>
-                <a href="/products" class="<?= str_contains($_SERVER['REQUEST_URI'], '/products') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Sản phẩm</a>
-                <a href="/about" class="<?= str_contains($_SERVER['REQUEST_URI'], '/about') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Giới thiệu</a>
-                <a href="/contact" class="<?= str_contains($_SERVER['REQUEST_URI'], '/contact') ? 'text-earthOrange border-b-2 border-earthOrange pb-1' : 'hover:text-earthOrange transition pb-1' ?>">Liên hệ</a>
-            </nav>
-
-            <div class="flex items-center gap-4">
-                <a href="/cart" class="text-warmBrown hover:text-earthOrange relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span class="absolute -top-2 -right-2 bg-earthOrange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
-                </a>
-
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <div class="flex items-center gap-2">
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                            <a href="/admin" class="px-4 py-2 bg-earthOrange text-white rounded-full text-xs font-semibold hover:bg-earthHover transition shadow-sm">Trang quản lý</a>
-                        <?php else: ?>
-                            <a href="/account" class="px-4 py-2 border border-earthOrange text-earthOrange rounded-full text-xs font-semibold hover:bg-earthOrange hover:text-white transition">Tài khoản</a>
-                        <?php endif; ?>
-
-                        <!-- Nút Đăng xuất chuẩn mẫu thiết kế mới -->
-                        <a href="/auth/logout" class="px-4 py-2 bg-customBeige border border-earthOrange/20 hover:border-earthOrange text-warmBrown rounded-full text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
-                            <span>Đăng xuất</span>
-                            <span class="text-earthOrange font-bold">&rarr;</span>
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <div class="hidden sm:flex items-center gap-3 border-l border-earthOrange/20 pl-4">
-                        <a href="/auth/login" class="text-warmBrown hover:text-earthOrange text-sm font-semibold transition">Đăng nhập</a>
-                        <a href="/auth/register" class="px-5 py-2 bg-[#C86D53] text-white rounded-full text-sm font-semibold hover:bg-earthHover transition shadow-sm">Đăng ký</a>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </header>
-
     <!-- BẮT ĐẦU PHẦN BODY TRANG SẢN PHẨM -->
     <main class="flex-grow w-full relative z-10 product-body-wrapper pb-16">
         
@@ -231,19 +187,6 @@ $occasions = isset($occasions) ? $occasions : [];
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-8 pb-10">
                     <?php if (!empty($products)): ?>
                         <?php foreach ($products as $p): ?>
-                        
-                        <?php
-                            // LOGIC THỜI GIAN THỰC: Kiểm tra sản phẩm tạo trong vòng 2 ngày (<= 2 ngày)
-                            $isNew = false;
-                            if (!empty($p['created_at'])) {
-                                $createdAt = strtotime($p['created_at']);
-                                $now = time();
-                                $diffDays = ($now - $createdAt) / 86400; // Đổi giây sang ngày
-                                if ($diffDays <= 2) {
-                                    $isNew = true;
-                                }
-                            }
-                        ?>
 
                         <div class="bg-white rounded-[24px] p-4 shadow-sm border border-earthOrange/10 hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group relative">
                             
@@ -254,34 +197,55 @@ $occasions = isset($occasions) ? $occasions : [];
                                 <?php else: ?>
                                     <div class="w-full h-full flex items-center justify-center text-4xl bg-orange-50">💐</div>
                                 <?php endif; ?>
-                                
-                                <!-- NHÃN ĐỘNG: Chỉ hiện "Mới" khi trong vòng 2 ngày, ngoài ra không hiện gì -->
-                                <?php if ($isNew): ?>
-                                    <span class="absolute top-2 left-2 bg-earthOrange/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm backdrop-blur-sm">
-                                        Mới
-                                    </span>
-                                <?php endif; ?>
                             </div>
                             
                             <!-- Nội dung Card -->
                             <div class="flex-grow flex flex-col px-1">
-                                <a href="/product/detail/<?= htmlspecialchars($p['slug'] ?? $p['id']) ?>" class="font-medium text-textMain hover:text-earthOrange transition text-sm mb-1 line-clamp-2 min-h-[40px]" title="<?= htmlspecialchars($p['name']) ?>">
-                                    <?= htmlspecialchars($p['name']) ?>
-                                </a>
-                                
-                                <div class="flex items-center gap-2 mt-auto mb-4">
-                                    <div class="text-earthOrange font-bold text-base">
-                                        <?= number_format($p['min_price'] ?? $p['price'] ?? 0, 0, ',', '.') ?> đ
-                                    </div>
-                                    <?php if (!empty($p['old_price']) && $p['old_price'] > ($p['min_price'] ?? $p['price'] ?? 0)): ?>
-                                        <div class="text-[11px] text-warmGray line-through">
-                                            <?= number_format($p['old_price'], 0, ',', '.') ?> đ
-                                        </div>
+                                <!-- Tên sản phẩm và Trạng thái tồn kho động -->
+                                <div class="flex items-start justify-between gap-2 mb-1.5">
+                                    <a href="/product/detail/<?= htmlspecialchars($p['slug'] ?? $p['id']) ?>" class="font-bold text-warmBrown hover:text-earthOrange transition text-base line-clamp-1" title="<?= htmlspecialchars($p['name']) ?>">
+                                        <?= htmlspecialchars($p['name']) ?>
+                                    </a>
+                                    <?php 
+                                        $stock = isset($p['stock_quantity']) ? (int)$p['stock_quantity'] : 1;
+                                    ?>
+                                    <?php if ($stock > 0): ?>
+                                        <span class="bg-emerald-50 text-emerald-600 text-[11px] font-semibold px-2.5 py-0.5 rounded-full shrink-0">Còn hàng</span>
+                                    <?php else: ?>
+                                        <span class="bg-red-50 text-red-500 text-[11px] font-semibold px-2.5 py-0.5 rounded-full shrink-0">Hết hàng</span>
                                     <?php endif; ?>
+                                </div>
+
+                                <!-- Đánh giá sao động từ Database -->
+                                <div class="flex items-center gap-1.5 mb-3">
+                                    <?php 
+                                        $avgRating = isset($p['avg_rating']) ? round($p['avg_rating']) : 5;
+                                        $totalReviews = isset($p['total_reviews']) ? (int)$p['total_reviews'] : 0;
+                                    ?>
+                                    <div class="text-amber-400 text-xs tracking-tight">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?= $i <= $avgRating ? '★' : '☆' ?>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <span class="text-warmGray text-xs">(<?= $totalReviews ?> đánh giá)</span>
+                                </div>
+                                
+                                <!-- Hiển thị khoảng giá linh hoạt (Min - Max) -->
+                                <div class="text-earthOrange font-bold text-lg mb-4">
+                                    <?php 
+                                        $minPrice = $p['min_price'] ?? 0;
+                                        $maxPrice = $p['max_price'] ?? $minPrice;
+                                        
+                                        if ($minPrice == $maxPrice || empty($maxPrice) || $maxPrice == 0) {
+                                            echo number_format($minPrice, 0, ',', '.') . ' đ';
+                                        } else {
+                                            echo number_format($minPrice, 0, ',', '.') . ' đ – ' . number_format($maxPrice, 0, ',', '.') . ' đ';
+                                        }
+                                    ?>
                                 </div>
                                 
                                 <!-- CTA Xem Chi Tiết -->
-                                <a href="/product/detail/<?= htmlspecialchars($p['slug'] ?? $p['id']) ?>" class="block w-full text-center bg-white border border-earthOrange text-earthOrange hover:bg-earthOrange hover:text-white py-2.5 rounded-full text-xs font-semibold transition">
+                                <a href="/product/detail/<?= htmlspecialchars($p['slug'] ?? $p['id']) ?>" class="mt-auto block w-full text-center bg-white border border-earthOrange text-earthOrange hover:bg-earthOrange hover:text-white py-3 rounded-full text-sm font-semibold transition shadow-sm">
                                     Xem chi tiết
                                 </a>
                             </div>
@@ -318,10 +282,6 @@ $occasions = isset($occasions) ? $occasions : [];
         </script>
     </main>
     <!-- KẾT THÚC PHẦN BODY TRANG SẢN PHẨM -->
-
-    <footer class="bg-white border-t border-customBeige py-6 text-center text-warmGray text-xs mt-auto">
-        &copy; <?= date('Y') ?> HoaEm Boutique. All rights reserved.
-    </footer>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
